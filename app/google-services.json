@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "398433123771",
+    "firebase_url": "https://sleepy-2e88d.firebaseio.com",
+    "project_id": "sleepy-2e88d",
+    "storage_bucket": "sleepy-2e88d.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:398433123771:android:2373cd4836b253c3",
+        "android_client_info": {
+          "package_name": "com.example.christian.sleepy"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "398433123771-0bhkuc3565ldn3iu8c812vg10o7emuoq.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.christian.sleepy",
+            "certificate_hash": "6a68bfa031c34dbbe7b224db8dc582e1de2c8d58"
+          }
+        },
+        {
+          "client_id": "398433123771-tq92ijvjkcn0mhb22mulafpndstqe9t6.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD6zT5adB7Fk73kc9izXX9Q9m6YHI5imoU"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "398433123771-tq92ijvjkcn0mhb22mulafpndstqe9t6.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
