@@ -35,6 +35,7 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.Logger;
 import com.google.firebase.database.ValueEventListener;
 
 import org.jdom2.JDOMException;
@@ -91,15 +92,14 @@ public class MainActivity extends AppCompatActivity {
 
         userNameText = findViewById(R.id.userNameView);
 
-        userNameText.setText(mAuth.getCurrentUser().getDisplayName());
-
         locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
 
         locationListener = new LocationListener() {
             @SuppressLint("SetTextI18n")
             @Override
             public void onLocationChanged(Location location) {
-                lijst.setText(location.getLatitude() + " " + location.getLongitude());
+
+                Log.d("hierzo", "hoi");
                 Location targetLocation = new Location("");
                 targetLocation.setLatitude(52.35526);
                 targetLocation.setLongitude(4.94651);
@@ -109,7 +109,7 @@ public class MainActivity extends AppCompatActivity {
                 phoneLocation.setLongitude(location.getLongitude());
 
                 float distanceInMeters = phoneLocation.distanceTo(targetLocation);
-                lijst.setText(Float.toString(distanceInMeters));
+                userNameText.setText(Float.toString(distanceInMeters));
             }
 
             @Override
@@ -132,9 +132,16 @@ public class MainActivity extends AppCompatActivity {
         getLocation();
 
         stationListRequest();
-//        readXML();
+
+        readXML();
 
         mDatabase = FirebaseDatabase.getInstance().getReference();
+
+        getUsername();
+
+        if(mDatabase == null)
+            Log.d("test", "db is null");
+
 
         addToDB();
 
@@ -156,11 +163,13 @@ public class MainActivity extends AppCompatActivity {
         // first check for permissions
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                Log.d("hierdan", "hierja");
                 requestPermissions(new String[]{Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.INTERNET}, 10);
             }
             return;
         }
-        locationManager.requestLocationUpdates("gps", 500, 0, locationListener);
+
+        locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 500, 0, locationListener);
 
     }
 
@@ -175,7 +184,25 @@ public class MainActivity extends AppCompatActivity {
 
         StationData data = new StationData(Lat, Lon, names, synonyms);
 
-        mDatabase.child("stations").child("Broek op Langendijk").setValue(data);
+        mDatabase.child("stations").child("Sintmaartensvlotbrug").setValue(data);
+    }
+
+    public void getUsername() {
+        ValueEventListener postListener = new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                // get from db
+                String gotUsername = dataSnapshot.child("users").child(mAuth.getUid()).child("username").getValue().toString();
+
+                userNameText.setText(gotUsername);
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                System.out.println("HIIIIIIIIIIIIIIIIIIIIIIIIIIIR Something went wrong.");
+            }
+        };
+        mDatabase.addValueEventListener(postListener);
     }
 
     public void getCoordsFromDB() {
@@ -189,7 +216,6 @@ public class MainActivity extends AppCompatActivity {
                 stationName = "Haarlem";
                 StationData info = dataSnapshot.child("stations").child(stationName).getValue(StationData.class);
 
-                userNameText.setText(info.Lon);
                 System.out.println("HIEEEEEEEEEER" + info.Lon);
             }
 
@@ -204,17 +230,19 @@ public class MainActivity extends AppCompatActivity {
     public void readXML() {
         org.jdom2.input.SAXBuilder saxBuilder = new SAXBuilder();
         try {
-            toaster("hier");
+
             org.jdom2.Document doc = saxBuilder.build(new StringReader(stationInfo));
-            toaster("hier2");
+
             String message = doc.getRootElement().getText();
-            toaster("hier3");
-            toaster(message);
+
+            Log.d("de waarde", message);
 
             Log.d("MyApp","I am here");
         } catch (JDOMException e) {
+            Log.d("hier", e.toString());
             // handle JDOMException
         } catch (IOException e) {
+            Log.d("daar", e.toString());
             // handle IOException
         }
 
@@ -292,7 +320,9 @@ public class MainActivity extends AppCompatActivity {
                 if (user != null) {
 
                     // User is signed in
+
                     Toast.makeText(getApplicationContext(), "redirected cause already logged in", Toast.LENGTH_SHORT).show();
+
                 }
                 else {
                     Toast.makeText(getApplicationContext(), "redirected cause not logged in", Toast.LENGTH_SHORT).show();

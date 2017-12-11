@@ -112,17 +112,6 @@ public class SplashActivity extends AppCompatActivity {
                             Toast.makeText(SplashActivity.this, "Created User: " + email,
                                     Toast.LENGTH_SHORT).show();
 
-                            FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-
-                            UserProfileChangeRequest profileUpdates = new UserProfileChangeRequest.Builder().setDisplayName(username).build();
-
-                            if (user != null) {
-                                user.updateProfile(profileUpdates);
-                            }
-                            else {
-                                toaster("Er is iets misgegaan...");
-                            }
-
                             addUserToDB();
 
                         } else {
