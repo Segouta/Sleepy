@@ -8,6 +8,7 @@ import java.util.List;
 
 public class StationData {
 
+    public String Code;
     public String Lat;
     public String Lon;
     public List<String> names;
@@ -15,7 +16,8 @@ public class StationData {
 
     public StationData() {}
 
-    public StationData(String Lat, String Lon, List<String> names, List<String> synonyms) {
+    public StationData(String Code, String Lat, String Lon, List<String> names, List<String> synonyms) {
+        this.Code = Code;
         this.Lat = Lat;
         this.Lon = Lon;
         this.names = names;

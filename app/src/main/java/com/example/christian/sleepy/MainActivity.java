@@ -1,6 +1,5 @@
 package com.example.christian.sleepy;
 
-import android.*;
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.Intent;
@@ -17,8 +16,9 @@ import android.os.Bundle;
 import android.text.method.ScrollingMovementMethod;
 import android.util.Base64;
 import android.util.Log;
-import android.util.Xml;
 import android.view.View;
+import android.widget.ArrayAdapter;
+import android.widget.MultiAutoCompleteTextView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -35,33 +35,23 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.Logger;
 import com.google.firebase.database.ValueEventListener;
 
-import org.jdom2.JDOMException;
-import org.jdom2.input.SAXBuilder;
-import org.w3c.dom.Document;
-import org.w3c.dom.NodeList;
-import org.xml.sax.SAXException;
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
+import org.xmlpull.v1.XmlPullParserFactory;
 
-import java.io.ByteArrayInputStream;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.StringReader;
-import java.io.UnsupportedEncodingException;
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
+
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
+
 
 public class MainActivity extends AppCompatActivity {
 
@@ -76,7 +66,11 @@ public class MainActivity extends AppCompatActivity {
     String stationInfo = "";
     String stationName = "";
 
+    List<StationData> DBqueue = new ArrayList<StationData>();
+
     private DatabaseReference mDatabase;
+
+    private String[] COUNTRIES = new String[] {"Belgium", "France", "Italy", "Germany", "Spain"};
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -87,6 +81,12 @@ public class MainActivity extends AppCompatActivity {
         lijst.setMovementMethod(new ScrollingMovementMethod());
 
         mAuth = FirebaseAuth.getInstance();
+
+        ArrayAdapter<String> adapter = new ArrayAdapter<String>(this,
+                android.R.layout.simple_dropdown_item_1line, COUNTRIES);
+        MultiAutoCompleteTextView searchText = findViewById(R.id.searchText);
+        searchText.setAdapter(adapter);
+        searchText.setTokenizer(new MultiAutoCompleteTextView.CommaTokenizer());
 
         setListener();
 
@@ -133,8 +133,6 @@ public class MainActivity extends AppCompatActivity {
 
         stationListRequest();
 
-        readXML();
-
         mDatabase = FirebaseDatabase.getInstance().getReference();
 
         getUsername();
@@ -142,8 +140,7 @@ public class MainActivity extends AppCompatActivity {
         if(mDatabase == null)
             Log.d("test", "db is null");
 
-
-        addToDB();
+//        addToDB();
 
         getCoordsFromDB();
     }
@@ -173,18 +170,14 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    public void addToDB() {
+    public void addToDBqueue(StationData data) {
 
-        FirebaseUser user = mAuth.getCurrentUser();
+        DBqueue.add(data);
+    }
 
-        List<String> names = Arrays.asList("Alkmaar", "Allekemaar", "Station Alkmaar Centraal");
-        List<String> synonyms = Arrays.asList("Alkmaar", "Allekemaar", "Station Alkmaar Centraal");
-        String Lat = Float.toString((float) 54.998009809);
-        String Lon = Float.toString((float) 4.68879998);
+    public void addToDB(StationData data) {
 
-        StationData data = new StationData(Lat, Lon, names, synonyms);
-
-        mDatabase.child("stations").child("Sintmaartensvlotbrug").setValue(data);
+        mDatabase.child("stations").child(data.Code).setValue(data);
     }
 
     public void getUsername() {
@@ -207,46 +200,92 @@ public class MainActivity extends AppCompatActivity {
 
     public void getCoordsFromDB() {
 
-        System.out.println("HIIIIIIIIIIIIIIIIIRRRRR");
 
         ValueEventListener postListener = new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 // get from db
-                stationName = "Haarlem";
-                StationData info = dataSnapshot.child("stations").child(stationName).getValue(StationData.class);
-
-                System.out.println("HIEEEEEEEEEER" + info.Lon);
+//                stationName = "Haarlem";
+//                StationData info = dataSnapshot.child("stations").child(stationName).getValue(StationData.class);
+//
+//                System.out.println(info.Lon);
             }
 
             @Override
             public void onCancelled(DatabaseError databaseError) {
-                System.out.println("HIIIIIIIIIIIIIIIIIIIIIIIIIIIR Something went wrong.");
+                System.out.println("Something went wrong...");
             }
         };
         mDatabase.addValueEventListener(postListener);
     }
 
-    public void readXML() {
-        org.jdom2.input.SAXBuilder saxBuilder = new SAXBuilder();
-        try {
+    public void XMLtoDB() throws XmlPullParserException, IOException {
 
-            org.jdom2.Document doc = saxBuilder.build(new StringReader(stationInfo));
+        System.out.println("---------------------------------------------");
 
-            String message = doc.getRootElement().getText();
+        XmlPullParserFactory factory = XmlPullParserFactory.newInstance();
+        factory.setNamespaceAware(true);
+        XmlPullParser xpp = factory.newPullParser();
 
-            Log.d("de waarde", message);
+        StationData toDB = new StationData();
+        List<String> namesToAdd = new ArrayList<String>();
+        List<String> synonymsToAdd = new ArrayList<String>();
 
-            Log.d("MyApp","I am here");
-        } catch (JDOMException e) {
-            Log.d("hier", e.toString());
-            // handle JDOMException
-        } catch (IOException e) {
-            Log.d("daar", e.toString());
-            // handle IOException
+        int counter = 0;
+
+        xpp.setInput(new StringReader (stationInfo));
+        int eventType = xpp.getEventType();
+        while (eventType != XmlPullParser.END_DOCUMENT) {
+
+            String name = xpp.getName();
+
+            if (name != null && name.equals("Code") && eventType == XmlPullParser.START_TAG) {
+                if (xpp.next() == XmlPullParser.TEXT) {
+                    System.out.println(xpp.getText());
+                    toDB.Code = xpp.getText();
+                }
+            }
+            else if (name != null && (name.equals("Kort") || name.equals("Middel") || name.equals("Lang")) && eventType == XmlPullParser.START_TAG) {
+                if (xpp.next() == XmlPullParser.TEXT) {
+
+                    namesToAdd.add(xpp.getText());
+                }
+            }
+            else if (name != null && name.equals("Synoniem") && eventType == XmlPullParser.START_TAG) {
+                if (xpp.next() == XmlPullParser.TEXT) {
+
+                    synonymsToAdd.add(xpp.getText());
+                }
+            }
+            else if (name != null && name.equals("Lat") && eventType == XmlPullParser.START_TAG) {
+                if (xpp.next() == XmlPullParser.TEXT) {
+
+                    toDB.Lat = xpp.getText();
+                }
+            }
+            else if (name != null && name.equals("Lon") && eventType == XmlPullParser.START_TAG) {
+                if (xpp.next() == XmlPullParser.TEXT) {
+
+                    toDB.Lon = xpp.getText();
+                }
+            }
+            toDB.names = namesToAdd;
+            toDB.synonyms = synonymsToAdd;
+
+            if (name != null && name.equals("Station") && eventType == XmlPullParser.END_TAG) {
+//                addToDBqueue(toDB);
+
+                addToDB(toDB);
+                namesToAdd.clear();
+                synonymsToAdd.clear();
+            }
+
+            eventType = xpp.next();
         }
 
     }
+
+
 
     public void logOutClicked(View view) {
         FirebaseAuth.getInstance().signOut();
@@ -287,6 +326,13 @@ public class MainActivity extends AppCompatActivity {
                         // Display the first 500 characters of the response string.
                         lijst.setText("Response is: "+ response);
                         stationInfo = response;
+                        try {
+                            XMLtoDB();
+                        } catch (XmlPullParserException e) {
+                            e.printStackTrace();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
                     }
                 }, new Response.ErrorListener() {
             @Override
