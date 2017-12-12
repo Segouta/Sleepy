@@ -204,14 +204,17 @@ public class HelperMethods {
         mDatabase.child("suggestions").setValue(suggestions);
     }
 
-    public List<List<String>> getSuggestions() {
+    public Suggestions getSuggestions() {
 
         ValueEventListener postListener = new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
 
-                suggestionList = dataSnapshot.child("suggestions").getValue(Suggestions.class).suggestionList;
-                codeList = dataSnapshot.child("suggestions").getValue(Suggestions.class).codeList;
+//                suggestionList = dataSnapshot.child("suggestions").getValue(Suggestions.class).suggestionList;
+//                codeList = dataSnapshot.child("suggestions").getValue(Suggestions.class).codeList;
+
+                s = dataSnapshot.child("suggestions").getValue(Suggestions.class);
+
 //                System.out.println("vanaf hier:------------------------------------------------------");
 //                for (int i = 0; i < suggestion.suggestionList.size(); i++) {
 //                    System.out.println(suggestion.suggestionList.get(i));
@@ -226,11 +229,11 @@ public class HelperMethods {
         mDatabase.addValueEventListener(postListener);
 
 
-        List<List<String>> totList = new ArrayList<List<String>>();
-        totList.add(suggestionList);
-        totList.add(codeList);
+//        List<List<String>> totList = new ArrayList<List<String>>();
+//        totList.add(suggestionList);
+//        totList.add(codeList);
 
-        return totList;
+        return s;
     }
 
     public StationData getStationInfo(final String stationCode) {

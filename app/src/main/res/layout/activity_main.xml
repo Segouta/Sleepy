@@ -5,6 +5,8 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@drawable/splash_gradient"
+    android:descendantFocusability="beforeDescendants"
+    android:focusableInTouchMode="true"
     tools:context="com.example.christian.sleepy.MainActivity">
 
     <Button
@@ -63,6 +65,7 @@
         android:layout_marginEnd="8dp"
         android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
+        android:textColor="#ffffff"
         android:background="@drawable/rounded_edittext"
         android:hint="Wake-up destination..."
         android:textAlignment="center"

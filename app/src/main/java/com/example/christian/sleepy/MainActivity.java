@@ -2,6 +2,7 @@ package com.example.christian.sleepy;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
@@ -16,6 +17,7 @@ import android.os.Bundle;
 import android.text.method.ScrollingMovementMethod;
 import android.util.Log;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.MultiAutoCompleteTextView;
@@ -54,12 +56,14 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        final InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+
         setContentView(R.layout.activity_main);
         lijst = findViewById(R.id.lijst);
         userNameText = findViewById(R.id.userNameView);
 
-        suggestions = fb.getSuggestions().get(0);
-        codes = fb.getSuggestions().get(1);
+        suggestions = fb.getSuggestions().suggestionList;
+        codes = fb.getSuggestions().codeList;
 
         mAuth = FirebaseAuth.getInstance();
         ArrayAdapter<String> adapter = new ArrayAdapter<String>(this,
@@ -119,7 +123,8 @@ public class MainActivity extends AppCompatActivity {
 //                System.out.println(codes.get(suggestions.indexOf(toFind)));
 
                 searchText.setText(toFind);
-                searchText.clearFocus();
+                searchText.setCursorVisible(false);
+                imm.toggleSoftInput(InputMethodManager.SHOW_FORCED, 0);
                 StationData data = fb.getStationInfo(codes.get(suggestions.indexOf(toFind)));
                 userNameText.setText(data.Lon);
             }
