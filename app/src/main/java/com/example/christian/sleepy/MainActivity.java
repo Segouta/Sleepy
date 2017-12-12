@@ -14,44 +14,22 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.method.ScrollingMovementMethod;
-import android.util.Base64;
 import android.util.Log;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.MultiAutoCompleteTextView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.android.volley.AuthFailureError;
-import com.android.volley.Request;
-import com.android.volley.RequestQueue;
-import com.android.volley.Response;
-import com.android.volley.VolleyError;
-import com.android.volley.toolbox.StringRequest;
-import com.android.volley.toolbox.Volley;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
-
-import org.xmlpull.v1.XmlPullParser;
-import org.xmlpull.v1.XmlPullParserException;
-import org.xmlpull.v1.XmlPullParserFactory;
-
-import java.io.IOException;
-import java.io.StringReader;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-
-import javax.xml.parsers.DocumentBuilder;
-
 
 public class MainActivity extends AppCompatActivity {
 
@@ -61,36 +39,39 @@ public class MainActivity extends AppCompatActivity {
     private LocationManager locationManager;
     private LocationListener locationListener;
 
-    TextView lijst, userNameText;
+    HelperMethods fb = new HelperMethods();
 
-    String stationInfo = "";
-    String stationName = "";
+    TextView lijst, userNameText;
 
     List<StationData> DBqueue = new ArrayList<StationData>();
 
     private DatabaseReference mDatabase;
 
-    private String[] COUNTRIES = new String[] {"Belgium", "France", "Italy", "Germany", "Spain"};
+    List<String> suggestions = new ArrayList<>();
+    List<String> codes = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
 
+        setContentView(R.layout.activity_main);
         lijst = findViewById(R.id.lijst);
-        lijst.setMovementMethod(new ScrollingMovementMethod());
+        userNameText = findViewById(R.id.userNameView);
+
+        suggestions = fb.getSuggestions().get(0);
+        codes = fb.getSuggestions().get(1);
 
         mAuth = FirebaseAuth.getInstance();
-
         ArrayAdapter<String> adapter = new ArrayAdapter<String>(this,
-                android.R.layout.simple_dropdown_item_1line, COUNTRIES);
-        MultiAutoCompleteTextView searchText = findViewById(R.id.searchText);
+                android.R.layout.simple_dropdown_item_1line, suggestions);
+        final MultiAutoCompleteTextView searchText = findViewById(R.id.searchText);
+        mDatabase = FirebaseDatabase.getInstance().getReference();
+
+
+        lijst.setMovementMethod(new ScrollingMovementMethod());
         searchText.setAdapter(adapter);
         searchText.setTokenizer(new MultiAutoCompleteTextView.CommaTokenizer());
-
         setListener();
-
-        userNameText = findViewById(R.id.userNameView);
 
         locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
 
@@ -109,7 +90,7 @@ public class MainActivity extends AppCompatActivity {
                 phoneLocation.setLongitude(location.getLongitude());
 
                 float distanceInMeters = phoneLocation.distanceTo(targetLocation);
-                userNameText.setText(Float.toString(distanceInMeters));
+                lijst.setText(Float.toString(distanceInMeters));
             }
 
             @Override
@@ -129,20 +110,29 @@ public class MainActivity extends AppCompatActivity {
             }
         };
 
+        searchText.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick (AdapterView<?> parent, View view, int position, long id) {
+                String toFind = parent.getItemAtPosition(position).toString();
+//                System.out.println("-" + toFind + "-");
+//                System.out.println(suggestions.indexOf(toFind));
+//                System.out.println(codes.get(suggestions.indexOf(toFind)));
+
+                searchText.setText(toFind);
+                searchText.clearFocus();
+                StationData data = fb.getStationInfo(codes.get(suggestions.indexOf(toFind)));
+                userNameText.setText(data.Lon);
+            }
+        });
+
         getLocation();
-
-        stationListRequest();
-
-        mDatabase = FirebaseDatabase.getInstance().getReference();
-
-        getUsername();
 
         if(mDatabase == null)
             Log.d("test", "db is null");
 
-//        addToDB();
-
-        getCoordsFromDB();
+        fb.stationListRequest(this);
+        fb.getUsername(mAuth, userNameText);
+        fb.getCoordsFromDB();
     }
 
     @Override
@@ -170,123 +160,6 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    public void addToDBqueue(StationData data) {
-
-        DBqueue.add(data);
-    }
-
-    public void addToDB(StationData data) {
-
-        mDatabase.child("stations").child(data.Code).setValue(data);
-    }
-
-    public void getUsername() {
-        ValueEventListener postListener = new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                // get from db
-                String gotUsername = dataSnapshot.child("users").child(mAuth.getUid()).child("username").getValue().toString();
-
-                userNameText.setText(gotUsername);
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-                System.out.println("HIIIIIIIIIIIIIIIIIIIIIIIIIIIR Something went wrong.");
-            }
-        };
-        mDatabase.addValueEventListener(postListener);
-    }
-
-    public void getCoordsFromDB() {
-
-
-        ValueEventListener postListener = new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                // get from db
-//                stationName = "Haarlem";
-//                StationData info = dataSnapshot.child("stations").child(stationName).getValue(StationData.class);
-//
-//                System.out.println(info.Lon);
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-                System.out.println("Something went wrong...");
-            }
-        };
-        mDatabase.addValueEventListener(postListener);
-    }
-
-    public void XMLtoDB() throws XmlPullParserException, IOException {
-
-        System.out.println("---------------------------------------------");
-
-        XmlPullParserFactory factory = XmlPullParserFactory.newInstance();
-        factory.setNamespaceAware(true);
-        XmlPullParser xpp = factory.newPullParser();
-
-        StationData toDB = new StationData();
-        List<String> namesToAdd = new ArrayList<String>();
-        List<String> synonymsToAdd = new ArrayList<String>();
-
-        int counter = 0;
-
-        xpp.setInput(new StringReader (stationInfo));
-        int eventType = xpp.getEventType();
-        while (eventType != XmlPullParser.END_DOCUMENT) {
-
-            String name = xpp.getName();
-
-            if (name != null && name.equals("Code") && eventType == XmlPullParser.START_TAG) {
-                if (xpp.next() == XmlPullParser.TEXT) {
-                    System.out.println(xpp.getText());
-                    toDB.Code = xpp.getText();
-                }
-            }
-            else if (name != null && (name.equals("Kort") || name.equals("Middel") || name.equals("Lang")) && eventType == XmlPullParser.START_TAG) {
-                if (xpp.next() == XmlPullParser.TEXT) {
-
-                    namesToAdd.add(xpp.getText());
-                }
-            }
-            else if (name != null && name.equals("Synoniem") && eventType == XmlPullParser.START_TAG) {
-                if (xpp.next() == XmlPullParser.TEXT) {
-
-                    synonymsToAdd.add(xpp.getText());
-                }
-            }
-            else if (name != null && name.equals("Lat") && eventType == XmlPullParser.START_TAG) {
-                if (xpp.next() == XmlPullParser.TEXT) {
-
-                    toDB.Lat = xpp.getText();
-                }
-            }
-            else if (name != null && name.equals("Lon") && eventType == XmlPullParser.START_TAG) {
-                if (xpp.next() == XmlPullParser.TEXT) {
-
-                    toDB.Lon = xpp.getText();
-                }
-            }
-            toDB.names = namesToAdd;
-            toDB.synonyms = synonymsToAdd;
-
-            if (name != null && name.equals("Station") && eventType == XmlPullParser.END_TAG) {
-//                addToDBqueue(toDB);
-
-                addToDB(toDB);
-                namesToAdd.clear();
-                synonymsToAdd.clear();
-            }
-
-            eventType = xpp.next();
-        }
-
-    }
-
-
-
     public void logOutClicked(View view) {
         FirebaseAuth.getInstance().signOut();
         goToSplashActivity();
@@ -310,51 +183,6 @@ public class MainActivity extends AppCompatActivity {
         if (mAuthListener != null) {
             mAuth.removeAuthStateListener(mAuthListener);
         }
-    }
-
-    public void stationListRequest() {
-
-        // Instantiate the RequestQueue.
-        RequestQueue queue = Volley.newRequestQueue(this);
-        String url ="http://christianbijvoets@gmail.com:LBSjuDJ1khvavr8TSq-zAE8uz61NX60ja_VzSWDRFvuq9gk0bJmzFg@webservices.ns.nl/ns-api-stations-v2";
-
-        // Request a string response from the provided URL.
-        StringRequest stringRequest = new StringRequest(Request.Method.GET, url,
-                new Response.Listener<String>() {
-                    @Override
-                    public void onResponse(String response) {
-                        // Display the first 500 characters of the response string.
-                        lijst.setText("Response is: "+ response);
-                        stationInfo = response;
-                        try {
-                            XMLtoDB();
-                        } catch (XmlPullParserException e) {
-                            e.printStackTrace();
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                }, new Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(VolleyError error) {
-                lijst.setText("That didn't work!");
-            }
-        })
-        {
-            @Override
-            public Map<String, String> getHeaders() throws AuthFailureError {
-                Map<String, String> headers = new HashMap<>();
-                String credentials = "christianbijvoets@gmail.com:LBSjuDJ1khvavr8TSq-zAE8uz61NX60ja_VzSWDRFvuq9gk0bJmzFg";
-                String auth = "Basic "
-                        + Base64.encodeToString(credentials.getBytes(), Base64.NO_WRAP);
-                headers.put("Content-Type", "application/json");
-                headers.put("Authorization", auth);
-                return headers;
-            }
-        };
-
-        // Add the request to the RequestQueue.
-        queue.add(stringRequest);
     }
 
     private void setListener() {

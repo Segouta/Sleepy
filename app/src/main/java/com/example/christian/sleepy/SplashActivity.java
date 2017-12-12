@@ -234,10 +234,6 @@ public class SplashActivity extends AppCompatActivity {
         Toast.makeText(SplashActivity.this, message, Toast.LENGTH_SHORT).show();
     }
 
-//    public void henk() {
-//        UserProfileChangeRequest r = new UserProfileChangeRequest().Builder().setDisplayName(username);
-//    }
-
 //    This function checks if a username already exists. If it exists, it returns true, else false.
     public boolean usernameExists(String username) {
 
