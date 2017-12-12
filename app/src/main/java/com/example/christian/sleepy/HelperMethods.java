@@ -36,6 +36,8 @@ public class HelperMethods {
 
     private String stationInfo = "";
 
+    private StationData stationData = new StationData();
+
     private Suggestions suggestions = new Suggestions();
     private Suggestions s = new Suggestions();
 
@@ -204,17 +206,14 @@ public class HelperMethods {
         mDatabase.child("suggestions").setValue(suggestions);
     }
 
-    public Suggestions getSuggestions() {
+    public List<List<String>> getSuggestions() {
 
         ValueEventListener postListener = new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
 
-//                suggestionList = dataSnapshot.child("suggestions").getValue(Suggestions.class).suggestionList;
-//                codeList = dataSnapshot.child("suggestions").getValue(Suggestions.class).codeList;
-
-                s = dataSnapshot.child("suggestions").getValue(Suggestions.class);
-
+                suggestionList = dataSnapshot.child("suggestions").getValue(Suggestions.class).suggestionList;
+                codeList = dataSnapshot.child("suggestions").getValue(Suggestions.class).codeList;
 //                System.out.println("vanaf hier:------------------------------------------------------");
 //                for (int i = 0; i < suggestion.suggestionList.size(); i++) {
 //                    System.out.println(suggestion.suggestionList.get(i));
@@ -229,26 +228,25 @@ public class HelperMethods {
         mDatabase.addValueEventListener(postListener);
 
 
-//        List<List<String>> totList = new ArrayList<List<String>>();
-//        totList.add(suggestionList);
-//        totList.add(codeList);
+        List<List<String>> totList = new ArrayList<List<String>>();
+        totList.add(suggestionList);
+        totList.add(codeList);
 
-        return s;
+        return totList;
     }
 
     public StationData getStationInfo(final String stationCode) {
 
-        StationData stationData = new StationData();
+
         ValueEventListener postListener = new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 // get from db
                 System.out.println("dit is de code to search: " + stationCode);
 
-//                stationName = "Haarlem";
-//                StationData info = dataSnapshot.child("stations").child(stationName).getValue(StationData.class);
-//
-//                System.out.println(info.Lon);
+                stationData = dataSnapshot.child("stations").child(stationCode).getValue(StationData.class);
+
+                System.out.println(stationData.Code);
             }
 
             @Override
@@ -260,7 +258,6 @@ public class HelperMethods {
 
         return stationData;
     }
-
 
 
 }

@@ -30,8 +30,9 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
+
+import static android.app.Service.START_STICKY;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -45,7 +46,7 @@ public class MainActivity extends AppCompatActivity {
 
     TextView lijst, userNameText;
 
-    List<StationData> DBqueue = new ArrayList<StationData>();
+    StationData data = new StationData();
 
     private DatabaseReference mDatabase;
 
@@ -62,8 +63,11 @@ public class MainActivity extends AppCompatActivity {
         lijst = findViewById(R.id.lijst);
         userNameText = findViewById(R.id.userNameView);
 
-        suggestions = fb.getSuggestions().suggestionList;
-        codes = fb.getSuggestions().codeList;
+        suggestions = fb.getSuggestions().get(0);
+        codes = fb.getSuggestions().get(1);
+
+        data.Lon = "0.0000";
+        data.Lat = "0.0000";
 
         mAuth = FirebaseAuth.getInstance();
         ArrayAdapter<String> adapter = new ArrayAdapter<String>(this,
@@ -85,9 +89,10 @@ public class MainActivity extends AppCompatActivity {
             public void onLocationChanged(Location location) {
 
                 Log.d("hierzo", "hoi");
+                toaster("new");
                 Location targetLocation = new Location("");
-                targetLocation.setLatitude(52.35526);
-                targetLocation.setLongitude(4.94651);
+                targetLocation.setLatitude(Float.parseFloat(data.Lat));
+                targetLocation.setLongitude(Float.parseFloat(data.Lon));
 
                 Location phoneLocation = new Location("");
                 phoneLocation.setLatitude(location.getLatitude());
@@ -123,10 +128,10 @@ public class MainActivity extends AppCompatActivity {
 //                System.out.println(codes.get(suggestions.indexOf(toFind)));
 
                 searchText.setText(toFind);
-                searchText.setCursorVisible(false);
-                imm.toggleSoftInput(InputMethodManager.SHOW_FORCED, 0);
-                StationData data = fb.getStationInfo(codes.get(suggestions.indexOf(toFind)));
-                userNameText.setText(data.Lon);
+//                imm.hideSoftInputFromWindow(getCurrentFocus().getWindowToken(),InputMethodManager.HIDE_NOT_ALWAYS);
+                data = fb.getStationInfo(codes.get(suggestions.indexOf(toFind)));
+                System.out.println("dit" + data.Code);
+                userNameText.setText(data.Code);
             }
         });
 
@@ -161,7 +166,7 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
 
-        locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 500, 0, locationListener);
+        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1, 0, locationListener);
 
     }
 

@@ -39,7 +39,7 @@ public class SplashActivity extends AppCompatActivity {
 
     TextView emailText, passwordText, confirmPasswordText, usernameText;
 
-    Button signupButton, loginButton;
+    Button signupButton, loginButton, backButton;
 
     String layout = "";
 
@@ -65,14 +65,13 @@ public class SplashActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_splash);
 
-        toaster("layout:::::::::::::::::::;; " + layout);
-
         mDatabase = FirebaseDatabase.getInstance().getReference();
 
         mAuth = FirebaseAuth.getInstance();
 
         signupButton = findViewById(R.id.signInButton);
         loginButton = findViewById(R.id.logInButton);
+        backButton = findViewById(R.id.backButton);
 
         emailText = findViewById(R.id.emailText);
         passwordText = findViewById(R.id.passwordText);
@@ -211,6 +210,7 @@ public class SplashActivity extends AppCompatActivity {
             usernameText.setVisibility(View.INVISIBLE);
             loginButton.setVisibility(View.VISIBLE);
             signupButton.setVisibility(View.VISIBLE);
+            backButton.setVisibility(View.INVISIBLE);
         }
         else if (layout.equals("signup")) {
             emailText.setVisibility(View.VISIBLE);
@@ -219,6 +219,7 @@ public class SplashActivity extends AppCompatActivity {
             usernameText.setVisibility(View.VISIBLE);
             loginButton.setVisibility(View.INVISIBLE);
             signupButton.setVisibility(View.VISIBLE);
+            backButton.setVisibility(View.VISIBLE);
         }
         else if (layout.equals("login")) {
             emailText.setVisibility(View.VISIBLE);
@@ -227,6 +228,7 @@ public class SplashActivity extends AppCompatActivity {
             usernameText.setVisibility(View.INVISIBLE);
             loginButton.setVisibility(View.VISIBLE);
             signupButton.setVisibility(View.INVISIBLE);
+            backButton.setVisibility(View.VISIBLE);
         }
     }
 

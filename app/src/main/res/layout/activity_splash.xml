@@ -145,7 +145,7 @@
         android:layout_marginTop="8dp"
         android:background="@drawable/rounded_edittext"
         android:drawableLeft="@android:drawable/ic_input_delete"
-        android:onClick="logClicked"
+        android:onClick="backClicked"
         android:textAlignment="center"
         android:textSize="20sp"
         app:layout_constraintBottom_toBottomOf="parent"
