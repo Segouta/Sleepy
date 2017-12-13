@@ -22,6 +22,7 @@ import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.MultiAutoCompleteTextView;
 import android.widget.Spinner;
 import android.widget.Switch;
@@ -56,6 +57,8 @@ public class MainActivity extends AppCompatActivity {
     String distance;
     Boolean shareState;
 
+    Button addButton;
+
     Switch vibeSwitch, soundSwitch;
 
     Spinner spinner;
@@ -87,8 +90,11 @@ public class MainActivity extends AppCompatActivity {
         userNameText = findViewById(R.id.userNameView);
         togoText = findViewById(R.id.togoText);
 
+        addButton = findViewById(R.id.addButton);
+
         lijst.setVisibility(View.INVISIBLE);
         togoText.setVisibility(View.INVISIBLE);
+        addButton.setVisibility(View.INVISIBLE);
 
         stationSuggestions = fb.getSuggestions().get(0);
 
@@ -175,6 +181,8 @@ public class MainActivity extends AppCompatActivity {
 
                 lijst.setVisibility(View.VISIBLE);
                 togoText.setVisibility(View.VISIBLE);
+
+                System.out.println("tofind: " + toFind);
 
                 searchText.setText(toFind);
                 getStationInfo(codes.get(suggestions.indexOf(toFind)));
@@ -358,10 +366,12 @@ public class MainActivity extends AppCompatActivity {
         if (shareState) {
             searchText.setHint("Wake-up destionation...");
             suggestions = stationSuggestions;
+            addButton.setVisibility(View.VISIBLE);
         }
         else {
             searchText.setHint("Search sleepy user...");
             suggestions = userSuggestions;
+            addButton.setVisibility(View.INVISIBLE);
         }
     }
 }
