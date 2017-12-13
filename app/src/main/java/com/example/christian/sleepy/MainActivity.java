@@ -26,13 +26,14 @@ import android.widget.Toast;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import static android.app.Service.START_STICKY;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -128,10 +129,10 @@ public class MainActivity extends AppCompatActivity {
 //                System.out.println(codes.get(suggestions.indexOf(toFind)));
 
                 searchText.setText(toFind);
+                getStationInfo(codes.get(suggestions.indexOf(toFind)));
 //                imm.hideSoftInputFromWindow(getCurrentFocus().getWindowToken(),InputMethodManager.HIDE_NOT_ALWAYS);
-                data = fb.getStationInfo(codes.get(suggestions.indexOf(toFind)));
-                System.out.println("dit" + data.Code);
-                userNameText.setText(data.Code);
+
+
             }
         });
 
@@ -218,6 +219,31 @@ public class MainActivity extends AppCompatActivity {
 
     public void toaster(String message) {
         Toast.makeText(MainActivity.this, message, Toast.LENGTH_SHORT).show();
+    }
+
+    public void getStationInfo(final String stationCode) {
+
+
+        ValueEventListener postListener = new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                // get from db
+                System.out.println("dit is de code to search: " + stationCode);
+
+                StationData stationData = dataSnapshot.child("stations").child(stationCode).getValue(StationData.class);
+                userNameText.setText(stationData.Code);
+
+                data = stationData;
+                System.out.println(stationData.Code);
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                System.out.println("Something went wrong...");
+            }
+        };
+        mDatabase.addValueEventListener(postListener);
+
     }
 
 }

@@ -235,29 +235,7 @@ public class HelperMethods {
         return totList;
     }
 
-    public StationData getStationInfo(final String stationCode) {
 
-
-        ValueEventListener postListener = new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                // get from db
-                System.out.println("dit is de code to search: " + stationCode);
-
-                stationData = dataSnapshot.child("stations").child(stationCode).getValue(StationData.class);
-
-                System.out.println(stationData.Code);
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-                System.out.println("Something went wrong...");
-            }
-        };
-        mDatabase.addValueEventListener(postListener);
-
-        return stationData;
-    }
 
 
 }
