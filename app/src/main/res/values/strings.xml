@@ -1,3 +1,9 @@
 <resources>
     <string name="app_name">Sleepy</string>
+
+    <string-array name="distances">
+        <item>500 m</item>
+        <item>1000 m</item>
+        <item>2000 m</item>
+    </string-array>
 </resources>

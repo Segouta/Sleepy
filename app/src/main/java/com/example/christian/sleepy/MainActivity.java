@@ -2,7 +2,9 @@ package com.example.christian.sleepy;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
@@ -21,6 +23,8 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.MultiAutoCompleteTextView;
+import android.widget.Spinner;
+import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -45,27 +49,55 @@ public class MainActivity extends AppCompatActivity {
 
     HelperMethods fb = new HelperMethods();
 
-    TextView lijst, userNameText;
+    TextView lijst, userNameText, togoText;
+
+    float selectedDistance;
+    boolean alarmSet;
+    String distance;
+    Boolean shareState;
+
+    Switch vibeSwitch, soundSwitch;
+
+    Spinner spinner;
+
+    MultiAutoCompleteTextView searchText;
 
     StationData data = new StationData();
 
     private DatabaseReference mDatabase;
 
     List<String> suggestions = new ArrayList<>();
+    List<String> stationSuggestions = new ArrayList<>();
+    List<String> userSuggestions = new ArrayList<>();
     List<String> codes = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        shareState = true;
+        alarmSet = false;
+        selectedDistance = 500;
+        distance = "500m";
+
         final InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
 
         setContentView(R.layout.activity_main);
-        lijst = findViewById(R.id.lijst);
+        lijst = findViewById(R.id.info);
         userNameText = findViewById(R.id.userNameView);
+        togoText = findViewById(R.id.togoText);
 
-        suggestions = fb.getSuggestions().get(0);
+        lijst.setVisibility(View.INVISIBLE);
+        togoText.setVisibility(View.INVISIBLE);
+
+        stationSuggestions = fb.getSuggestions().get(0);
+
+        spinner = findViewById(R.id.spinner);
+        suggestions = stationSuggestions;
         codes = fb.getSuggestions().get(1);
+
+        vibeSwitch = findViewById(R.id.vibeSwitch);
+        soundSwitch = findViewById(R.id.soundSwitch);
 
         data.Lon = "0.0000";
         data.Lat = "0.0000";
@@ -73,7 +105,8 @@ public class MainActivity extends AppCompatActivity {
         mAuth = FirebaseAuth.getInstance();
         ArrayAdapter<String> adapter = new ArrayAdapter<String>(this,
                 android.R.layout.simple_dropdown_item_1line, suggestions);
-        final MultiAutoCompleteTextView searchText = findViewById(R.id.searchText);
+
+        searchText = findViewById(R.id.searchText);
         mDatabase = FirebaseDatabase.getInstance().getReference();
 
 
@@ -90,7 +123,7 @@ public class MainActivity extends AppCompatActivity {
             public void onLocationChanged(Location location) {
 
                 Log.d("hierzo", "hoi");
-                toaster("new");
+//                toaster("new");
                 Location targetLocation = new Location("");
                 targetLocation.setLatitude(Float.parseFloat(data.Lat));
                 targetLocation.setLongitude(Float.parseFloat(data.Lon));
@@ -100,7 +133,22 @@ public class MainActivity extends AppCompatActivity {
                 phoneLocation.setLongitude(location.getLongitude());
 
                 float distanceInMeters = phoneLocation.distanceTo(targetLocation);
-                lijst.setText(Float.toString(distanceInMeters));
+                int distanceInMetersRound = Math.round(distanceInMeters);
+                if (distanceInMeters < 2000) {
+                    lijst.setText(Integer.toString(Math.round(distanceInMetersRound)) + " m");
+                }
+                else{
+                    lijst.setText(Double.toString(round(distanceInMeters / 1000, 1)) + " km");
+                }
+
+                if (alarmSet && distanceInMeters < selectedDistance) {
+                    toaster("waking user up rn");
+
+//                    TODO: set the wakeup alert here!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!=============
+
+                    alarmSet = false;
+                }
+
             }
 
             @Override
@@ -124,14 +172,27 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onItemClick (AdapterView<?> parent, View view, int position, long id) {
                 String toFind = parent.getItemAtPosition(position).toString();
-//                System.out.println("-" + toFind + "-");
-//                System.out.println(suggestions.indexOf(toFind));
-//                System.out.println(codes.get(suggestions.indexOf(toFind)));
+
+                lijst.setVisibility(View.VISIBLE);
+                togoText.setVisibility(View.VISIBLE);
 
                 searchText.setText(toFind);
                 getStationInfo(codes.get(suggestions.indexOf(toFind)));
-//                imm.hideSoftInputFromWindow(getCurrentFocus().getWindowToken(),InputMethodManager.HIDE_NOT_ALWAYS);
+                imm.hideSoftInputFromWindow(getCurrentFocus().getWindowToken(),InputMethodManager.HIDE_NOT_ALWAYS);
 
+
+            }
+        });
+
+        spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                distance = parent.getItemAtPosition(position).toString();
+                Float distanceFloat = Float.valueOf(distance.substring(0, distance.length() - 2));
+                selectedDistance = distanceFloat;
+            }
+
+            public void onNothingSelected(AdapterView<?> parent) {
 
             }
         });
@@ -231,8 +292,9 @@ public class MainActivity extends AppCompatActivity {
                 System.out.println("dit is de code to search: " + stationCode);
 
                 StationData stationData = dataSnapshot.child("stations").child(stationCode).getValue(StationData.class);
-                userNameText.setText(stationData.Code);
 
+                togoText.setVisibility(View.VISIBLE);
+                lijst.setVisibility(View.VISIBLE);
                 data = stationData;
                 System.out.println(stationData.Code);
             }
@@ -246,4 +308,60 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    private static double round (double value, int precision) {
+        int scale = (int) Math.pow(10, precision);
+        return (double) Math.round(value * scale) / scale;
+    }
+
+    public void deleteButton(View view) {
+        searchText.setText("");
+        togoText.setVisibility(View.INVISIBLE);
+        lijst.setVisibility(View.INVISIBLE);
+    }
+
+    public void setClicked(View view) {
+        if (data.names != null) {
+            setClicked();
+        } else {
+            toaster("Please select station first");
+        }
+    }
+
+    public void setClicked() {
+        AlertDialog.Builder builder;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            builder = new AlertDialog.Builder(this, android.R.style.Theme_Material_Dialog_Alert);
+        } else {
+            builder = new AlertDialog.Builder(this);
+        }
+        builder.setTitle("Sumamary")
+                .setMessage("Traveling to " + data.names.get(2) + ", waking up " + distance + " before arrival.")
+                .setPositiveButton("Set alarm!", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        alarmSet = true;
+//                        toaster(String.valueOf(vibeSwitch.isChecked()));
+//                        toaster(String.valueOf(soundSwitch.isChecked()));
+                    }
+                })
+                .setNegativeButton("Back", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        // do nothing
+                    }
+                })
+                .setIcon(android.R.drawable.ic_menu_info_details)
+                .show();
+    }
+
+    public void shareClicked(View view) {
+        shareState = !shareState;
+
+        if (shareState) {
+            searchText.setHint("Wake-up destionation...");
+            suggestions = stationSuggestions;
+        }
+        else {
+            searchText.setHint("Search sleepy user...");
+            suggestions = userSuggestions;
+        }
+    }
 }

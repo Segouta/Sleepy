@@ -71,7 +71,7 @@ public class HelperMethods {
                 // get from db
                 String gotUsername = dataSnapshot.child("users").child(mAuth.getUid()).child("username").getValue().toString();
 
-                userNameText.setText(gotUsername);
+                userNameText.setText("Welcome back, " + gotUsername);
             }
 
             @Override
