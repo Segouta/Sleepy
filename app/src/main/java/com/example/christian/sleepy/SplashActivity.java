@@ -119,6 +119,7 @@ public class SplashActivity extends AppCompatActivity {
                             Log.w("Creating user failed", "createUserWithEmail:failure", task.getException());
                             Toast.makeText(SplashActivity.this, "Failed to create new user...",
                                     Toast.LENGTH_SHORT).show();
+                            setVisibility("signup");
 
                         }
                     }
@@ -139,6 +140,7 @@ public class SplashActivity extends AppCompatActivity {
                             Log.w("Logging In Failed", "signInWithEmail:failure", task.getException());
                             Toast.makeText(SplashActivity.this, "Login failed.",
                                     Toast.LENGTH_SHORT).show();
+                            setVisibility("login");
 
                         }
                     }

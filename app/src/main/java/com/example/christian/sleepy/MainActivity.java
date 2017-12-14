@@ -12,6 +12,7 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Build;
+import android.os.Vibrator;
 import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
@@ -63,7 +64,7 @@ public class MainActivity extends AppCompatActivity {
     String distance;
     Boolean shareState;
 
-    Button addButton, alarmButton, logoutButton, backButton, shareButton;
+    Button addButton, alarmButton, logoutButton, backButton, shareButton, resetButton;
     ProgressBar progressBar;
     Spinner spinner;
 
@@ -97,6 +98,7 @@ public class MainActivity extends AppCompatActivity {
         alarmButton = findViewById(R.id.alarmButton);
         backButton = findViewById(R.id.backButton);
         logoutButton = findViewById(R.id.logOutButton);
+        resetButton = findViewById(R.id.resetButton);
         shareButton = findViewById(R.id.shareButton);
         spinner = findViewById(R.id.spinner);
         searchText = findViewById(R.id.searchText);
@@ -158,8 +160,7 @@ public class MainActivity extends AppCompatActivity {
                 if (alarmSet && distanceInMeters < selectedDistance) {
                     toaster("waking user up rn");
 
-//                    TODO: set the wakeup alert here!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!=============
-
+                    alertArrival();
                     alarmSet = false;
                 }
 
@@ -261,6 +262,7 @@ public class MainActivity extends AppCompatActivity {
             backButton.setVisibility(View.INVISIBLE);
             alarmButton.setVisibility(View.INVISIBLE);
             shareButton.setVisibility(View.INVISIBLE);
+            resetButton.setVisibility(View.INVISIBLE);
         }
         else if (type.equals("main")){
             progressBar.setVisibility(View.INVISIBLE);
@@ -274,12 +276,13 @@ public class MainActivity extends AppCompatActivity {
             backButton.setVisibility(View.VISIBLE);
             alarmButton.setVisibility(View.VISIBLE);
             shareButton.setVisibility(View.VISIBLE);
+            resetButton.setVisibility(View.INVISIBLE);
         }
         else if (type.equals("sleeping")){
             progressBar.setVisibility(View.INVISIBLE);
-            dist.setVisibility(View.INVISIBLE);
+            dist.setVisibility(View.VISIBLE);
             userNameText.setVisibility(View.INVISIBLE);
-            togoText.setVisibility(View.INVISIBLE);
+            togoText.setVisibility(View.VISIBLE);
             addButton.setVisibility(View.INVISIBLE);
             spinner.setVisibility(View.INVISIBLE);
             searchText.setVisibility(View.INVISIBLE);
@@ -287,6 +290,7 @@ public class MainActivity extends AppCompatActivity {
             backButton.setVisibility(View.INVISIBLE);
             alarmButton.setVisibility(View.INVISIBLE);
             shareButton.setVisibility(View.INVISIBLE);
+            resetButton.setVisibility(View.VISIBLE);
         }
 
     }
@@ -353,7 +357,7 @@ public class MainActivity extends AppCompatActivity {
                     Log.d("setListener", "signed in so redirected");
                 }
                 else {
-                   toaster("You were redirected, because you were logged out.");
+                   toaster("You are logged out.");
                     goToSplashActivity();
                 }
             }
@@ -569,11 +573,11 @@ public class MainActivity extends AppCompatActivity {
                 System.out.println(userFavorites);
 
                 if (userFavorites != null) {
-                    TextView title = findViewById(R.id.favoTitle);
-                    title.setText(username + "'s favorite sleep-through stations:");
                     final Dialog dialog = new Dialog(MainActivity.this);
                     dialog.setContentView(R.layout.custom_list);
-                    dialog.setTitle("Title...");
+                    dialog.setTitle("Favorites");
+                    TextView title = (TextView) dialog.findViewById(R.id.favoTitle);
+                    title.setText(username + "'s favorite sleep-through stations:");
                     ListView list = (ListView) dialog.findViewById(R.id.listView);
                     ArrayAdapter<String> adapter3 = new ArrayAdapter(MainActivity.this, android.R.layout.simple_list_item_1, userFavorites);
                     list.setAdapter(adapter3);
@@ -589,8 +593,38 @@ public class MainActivity extends AppCompatActivity {
                 System.out.println("Something went wrong.");
             }
         };
-        mDatabase.addValueEventListener(postListener);
+        mDatabase.addListenerForSingleValueEvent(postListener);
 
 
+    }
+
+    public void alertArrival() {
+        final Vibrator v = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
+        // Vibrate for 500 milliseconds
+        long[] pattern = {50, 100, 50, 100, 300, 100, 300, 100};
+        v.vibrate(pattern, 0);
+        AlertDialog.Builder builder;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            builder = new AlertDialog.Builder(this, android.R.style.Theme_Material_Dialog_Alert);
+        } else {
+            builder = new AlertDialog.Builder(this);
+        }
+        builder.setTitle("WAKE UP!")
+                .setMessage("You're almost at " + data.names.get(1) + " station!")
+                .setPositiveButton("Got it!", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        setLayout("main");
+                        v.cancel();
+
+                    }
+                })
+                .setIcon(android.R.drawable.stat_sys_warning)
+                .show();
+    }
+
+    public void resetClicked(View view) {
+        setLayout("main");
+        alarmSet = false;
+        toaster("Alarm reset");
     }
 }

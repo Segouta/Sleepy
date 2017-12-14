@@ -61,6 +61,7 @@
         android:layout_height="40dp"
         android:layout_marginStart="28dp"
         android:layout_marginTop="244dp"
+        android:inputType="text"
         android:background="@drawable/rounded_edittext"
         android:hint="Wake-up destination..."
         android:textAlignment="center"
@@ -97,6 +98,22 @@
         app:layout_constraintStart_toEndOf="@+id/searchText"
         app:layout_constraintTop_toTopOf="@+id/searchText"
         app:layout_constraintVertical_bias="1.0" />
+
+    <Button
+        android:id="@+id/resetButton"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="492dp"
+        android:background="@drawable/rounded_edittext"
+        android:drawableLeft="@android:drawable/ic_input_delete"
+        android:onClick="resetClicked"
+        android:paddingLeft="3dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.498"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
     <Button
         android:id="@+id/shareButton"
