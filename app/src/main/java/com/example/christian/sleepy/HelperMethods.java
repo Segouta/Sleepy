@@ -4,6 +4,7 @@ import android.content.Context;
 import android.util.Base64;
 import android.util.Log;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.android.volley.AuthFailureError;
 import com.android.volley.Request;
@@ -36,33 +37,10 @@ public class HelperMethods {
 
     private String stationInfo = "";
 
-    private StationData stationData = new StationData();
-
     private Suggestions suggestions = new Suggestions();
-    private Suggestions s = new Suggestions();
 
     private List<String> suggestionList = new ArrayList<>();
     private List<String> codeList = new ArrayList<>();
-
-    public void getCoordsFromDB() {
-
-        ValueEventListener postListener = new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                // get from db
-//                stationName = "Haarlem";
-//                StationData info = dataSnapshot.child("stations").child(stationName).getValue(StationData.class);
-//
-//                System.out.println(info.Lon);
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-                System.out.println("Something went wrong...");
-            }
-        };
-        mDatabase.addValueEventListener(postListener);
-    }
 
     public void getUsername(final FirebaseAuth mAuth, final TextView userNameText) {
         ValueEventListener postListener = new ValueEventListener() {
@@ -101,6 +79,7 @@ public class HelperMethods {
                         // Display the first 500 characters of the response string.
                         // lijst.setText("Response is: "+ response);
                         stationInfo = response;
+                        Log.d("hoi", "onResponse: done");
                         try {
                             XMLtoDB();
                         } catch (XmlPullParserException e) {
@@ -206,23 +185,22 @@ public class HelperMethods {
         mDatabase.child("suggestions").setValue(suggestions);
     }
 
-    public List<List<String>> getSuggestions() {
+
+
+    public List<List<String>> getUserSuggestions() {
 
         ValueEventListener postListener = new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
 
-                suggestionList = dataSnapshot.child("suggestions").getValue(Suggestions.class).suggestionList;
-                codeList = dataSnapshot.child("suggestions").getValue(Suggestions.class).codeList;
-//                System.out.println("vanaf hier:------------------------------------------------------");
-//                for (int i = 0; i < suggestion.suggestionList.size(); i++) {
-//                    System.out.println(suggestion.suggestionList.get(i));
-//                }
+                suggestionList = dataSnapshot.child("userSuggestions").getValue(Suggestions.class).suggestionList;
+                codeList = dataSnapshot.child("userSuggestions").getValue(Suggestions.class).codeList;
+
             }
 
             @Override
             public void onCancelled(DatabaseError databaseError) {
-                System.out.println("HIIIIIIIIIIIIIIIIIIIIIIIIIIIR Something went wrong.");
+                System.out.println("Something went wrong.");
             }
         };
         mDatabase.addValueEventListener(postListener);
@@ -234,8 +212,5 @@ public class HelperMethods {
 
         return totList;
     }
-
-
-
 
 }

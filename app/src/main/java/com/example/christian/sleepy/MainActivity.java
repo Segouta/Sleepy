@@ -63,15 +63,20 @@ public class MainActivity extends AppCompatActivity {
 
     Spinner spinner;
 
+    ArrayAdapter<String> adapter;
+    ArrayAdapter<String> adapter2;
+
     MultiAutoCompleteTextView searchText;
 
     StationData data = new StationData();
 
-    private DatabaseReference mDatabase;
+    private DatabaseReference mDatabase =  FirebaseDatabase.getInstance().getReference();
 
-    List<String> suggestions = new ArrayList<>();
+    List<String> suggestionList = new ArrayList<>();
+    List<String> codeList = new ArrayList<>();
     List<String> stationSuggestions = new ArrayList<>();
     List<String> userSuggestions = new ArrayList<>();
+    List<String> userIds = new ArrayList<>();
     List<String> codes = new ArrayList<>();
 
     @Override
@@ -94,13 +99,18 @@ public class MainActivity extends AppCompatActivity {
 
         lijst.setVisibility(View.INVISIBLE);
         togoText.setVisibility(View.INVISIBLE);
-        addButton.setVisibility(View.INVISIBLE);
+        addButton.setVisibility(View.VISIBLE);
 
-        stationSuggestions = fb.getSuggestions().get(0);
+        stationSuggestions = getSuggestions().get(0);
+        codes = getSuggestions().get(1);
+
+        userSuggestions = getUserSuggestions().get(0);
+        userIds = getUserSuggestions().get(1);
+
 
         spinner = findViewById(R.id.spinner);
-        suggestions = stationSuggestions;
-        codes = fb.getSuggestions().get(1);
+
+
 
         vibeSwitch = findViewById(R.id.vibeSwitch);
         soundSwitch = findViewById(R.id.soundSwitch);
@@ -109,8 +119,8 @@ public class MainActivity extends AppCompatActivity {
         data.Lat = "0.0000";
 
         mAuth = FirebaseAuth.getInstance();
-        ArrayAdapter<String> adapter = new ArrayAdapter<String>(this,
-                android.R.layout.simple_dropdown_item_1line, suggestions);
+        Log.d("xdtcfgvh", "onCreate: " + String.valueOf(stationSuggestions.size()));
+
 
         searchText = findViewById(R.id.searchText);
         mDatabase = FirebaseDatabase.getInstance().getReference();
@@ -185,7 +195,7 @@ public class MainActivity extends AppCompatActivity {
                 System.out.println("tofind: " + toFind);
 
                 searchText.setText(toFind);
-                getStationInfo(codes.get(suggestions.indexOf(toFind)));
+                getStationInfo(codes.get(stationSuggestions.indexOf(toFind)));
                 imm.hideSoftInputFromWindow(getCurrentFocus().getWindowToken(),InputMethodManager.HIDE_NOT_ALWAYS);
 
 
@@ -210,9 +220,9 @@ public class MainActivity extends AppCompatActivity {
         if(mDatabase == null)
             Log.d("test", "db is null");
 
-        fb.stationListRequest(this);
+//        fb.stationListRequest(this);
         fb.getUsername(mAuth, userNameText);
-        fb.getCoordsFromDB();
+
     }
 
     @Override
@@ -342,8 +352,8 @@ public class MainActivity extends AppCompatActivity {
         } else {
             builder = new AlertDialog.Builder(this);
         }
-        builder.setTitle("Sumamary")
-                .setMessage("Traveling to " + data.names.get(2) + ", waking up " + distance + " before arrival.")
+        builder.setTitle("Summary")
+                .setMessage("Traveling to " + data.names.get(1) + ", waking up " + distance + " before arrival.")
                 .setPositiveButton("Set alarm!", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int which) {
                         alarmSet = true;
@@ -363,15 +373,123 @@ public class MainActivity extends AppCompatActivity {
     public void shareClicked(View view) {
         shareState = !shareState;
 
+        toaster ("hoi");
+        Log.d("hoi", "hoi");
+
         if (shareState) {
             searchText.setHint("Wake-up destionation...");
-            suggestions = stationSuggestions;
             addButton.setVisibility(View.VISIBLE);
+            searchText.setAdapter(adapter);
+//            searchText.setTokenizer(new MultiAutoCompleteTextView.CommaTokenizer());
         }
         else {
             searchText.setHint("Search sleepy user...");
-            suggestions = userSuggestions;
             addButton.setVisibility(View.INVISIBLE);
+            searchText.setAdapter(adapter2);
+//            searchText.setTokenizer(new MultiAutoCompleteTextView.CommaTokenizer());
         }
+
+    }
+
+    public void addClicked(View view) {
+        if (data.names != null) {
+            addClicked();
+        } else {
+            toaster("Please select station first");
+        }
+    }
+
+    public void addClicked() {
+        AlertDialog.Builder builder;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            builder = new AlertDialog.Builder(this, android.R.style.Theme_Material_Dialog_Alert);
+        } else {
+            builder = new AlertDialog.Builder(this);
+        }
+        builder.setTitle("Confirm add")
+                .setMessage("Are you sure you want to add " + data.names.get(1) + " to your favorites?")
+                .setPositiveButton("Add!", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        toaster("Added " + data.names.get(1) + " to your favorites!");
+                    }
+                })
+                .setNegativeButton("Back", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        // do nothing
+                    }
+                })
+                .setIcon(android.R.drawable.ic_menu_info_details)
+                .show();
+    }
+
+    public List<List<String>> getSuggestions() {
+
+        ValueEventListener postListener = new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+
+                suggestionList = dataSnapshot.child("suggestions").getValue(Suggestions.class).suggestionList;
+                codeList = dataSnapshot.child("suggestions").getValue(Suggestions.class).codeList;
+                stationSuggestions = suggestionList;
+                codes = codeList;
+//                System.out.println("vanaf hier:------------------------------------------------------");
+//                for (int i = 0; i < suggestion.suggestionList.size(); i++) {
+//                    System.out.println(suggestion.suggestionList.get(i));
+//                }
+                adapter = new ArrayAdapter<String>(getApplicationContext(),
+                        android.R.layout.simple_dropdown_item_1line, suggestionList);
+                searchText.setAdapter(adapter);
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                System.out.println("HIIIIIIIIIIIIIIIIIIIIIIIIIIIR Something went wrong.");
+            }
+        };
+        mDatabase.addValueEventListener(postListener);
+
+
+        List<List<String>> totList = new ArrayList<List<String>>();
+        totList.add(suggestionList);
+        totList.add(codeList);
+
+        System.out.println("getSUggestions done");
+
+        return totList;
+    }
+
+    public List<List<String>> getUserSuggestions() {
+
+        ValueEventListener postListener = new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+
+                suggestionList = dataSnapshot.child("userSuggestions").getValue(Suggestions.class).suggestionList;
+                codeList = dataSnapshot.child("userSuggestions").getValue(Suggestions.class).codeList;
+                userSuggestions = suggestionList;
+                userIds = codeList;
+//                System.out.println("vanaf hier:------------------------------------------------------");
+//                for (int i = 0; i < suggestion.suggestionList.size(); i++) {
+//                    System.out.println(suggestion.suggestionList.get(i));
+//                }
+                adapter2 = new ArrayAdapter<String>(getApplicationContext(),
+                        android.R.layout.simple_dropdown_item_1line, suggestionList);
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                System.out.println("HIIIIIIIIIIIIIIIIIIIIIIIIIIIR Something went wrong.");
+            }
+        };
+        mDatabase.addValueEventListener(postListener);
+
+
+        List<List<String>> totList = new ArrayList<List<String>>();
+        totList.add(suggestionList);
+        totList.add(codeList);
+
+        System.out.println("getSUggestions done");
+
+        return totList;
     }
 }

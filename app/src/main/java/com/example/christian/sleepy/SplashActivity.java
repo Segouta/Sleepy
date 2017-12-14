@@ -24,6 +24,7 @@ import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 
 import java.sql.Time;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -199,6 +200,43 @@ public class SplashActivity extends AppCompatActivity {
         UserData data = new UserData(username, email, password, Calendar.getInstance().getTime(), null);
 
         mDatabase.child("users").child(user.getUid()).setValue(data);
+
+        ValueEventListener postListener = new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                // get from db
+
+
+                Suggestions check = dataSnapshot.child("userSuggestions").getValue(Suggestions.class);
+                if (check == null) {
+                    Suggestions userAddData = new Suggestions();
+                    List<String> inName = new ArrayList<>();
+                    List<String> inId = new ArrayList<>();
+                    inName.add(username);
+                    inId.add(mAuth.getCurrentUser().getUid());
+                    userAddData.suggestionList = inName;
+                    userAddData.codeList = inId;
+                    mDatabase.child("userSuggestions").setValue(userAddData);
+                } else {
+                    Suggestions userAddData = new Suggestions();
+                    List<String> inName = check.suggestionList;
+                    List<String> inId = check.codeList;
+                    inName.add(username);
+                    inId.add(mAuth.getCurrentUser().getUid());
+                    userAddData.suggestionList = inName;
+                    userAddData.codeList = inId;
+                    mDatabase.child("userSuggestions").setValue(userAddData);
+                }
+
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                System.out.println("HIIIIIIIIIIIIIIIIIIIIIIIIIIIR Something went wrong.");
+            }
+        };
+        mDatabase.addListenerForSingleValueEvent(postListener);
+
     }
 
     public void setVisibility(String localLayout) {
