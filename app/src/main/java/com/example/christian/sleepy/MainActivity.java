@@ -11,6 +11,7 @@ import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.media.MediaPlayer;
 import android.os.Build;
 import android.os.Vibrator;
 import android.provider.Settings;
@@ -600,9 +601,11 @@ public class MainActivity extends AppCompatActivity {
 
     public void alertArrival() {
         final Vibrator v = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
+        final MediaPlayer mp = MediaPlayer.create(this, R.raw.sound);
         // Vibrate for 500 milliseconds
         long[] pattern = {50, 100, 50, 100, 300, 100, 300, 100};
-        v.vibrate(pattern, 0);
+        mp.start();
+//        v.vibrate(pattern, 0);
         AlertDialog.Builder builder;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             builder = new AlertDialog.Builder(this, android.R.style.Theme_Material_Dialog_Alert);
@@ -615,6 +618,7 @@ public class MainActivity extends AppCompatActivity {
                     public void onClick(DialogInterface dialog, int which) {
                         setLayout("main");
                         v.cancel();
+                        mp.stop();
 
                     }
                 })
