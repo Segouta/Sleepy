@@ -166,6 +166,9 @@ public class SplashActivity extends AppCompatActivity {
             else if (usernameExists(username)) {
                 toaster("Username already exists...");
             }
+            else if (password.length() < 7) {
+                toaster("Password must contain at least 7 characters");
+            }
             else {
                 setVisibility("loading");
                 createAccount();
