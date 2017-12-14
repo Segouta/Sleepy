@@ -4,7 +4,6 @@ import android.content.Context;
 import android.util.Base64;
 import android.util.Log;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.android.volley.AuthFailureError;
 import com.android.volley.Request;
@@ -14,7 +13,6 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -28,7 +26,6 @@ import org.xmlpull.v1.XmlPullParserFactory;
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -189,6 +186,8 @@ public class HelperMethods {
 
     public void addToFavorites(final String toAdd, final FirebaseAuth mAuth) {
 
+        System.out.println("inAddToFavs");
+        Log.d("hier", "indeaddvafs");
         ValueEventListener postListener = new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
@@ -205,14 +204,10 @@ public class HelperMethods {
 
                 } else {
                     System.out.println("already things here");
-//                    Suggestions userAddData = new Suggestions();
-//                    List<String> inName = check.suggestionList;
-//                    List<String> inId = check.codeList;
-//                    inName.add(toAdd);
-//                    inId.add(mAuth.getCurrentUser().getUid());
-//                    userAddData.suggestionList = inName;
-//                    userAddData.codeList = inId;
-//                    mDatabase.child("userSuggestions").setValue(userAddData);
+                    List<String> inName = data.favorites;
+                    inName.add(toAdd);
+                    data.favorites = inName;
+                    mDatabase.child("users").child(mAuth.getCurrentUser().getUid()).setValue(data);
                 }
             }
 

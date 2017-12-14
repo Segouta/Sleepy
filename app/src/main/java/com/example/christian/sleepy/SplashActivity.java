@@ -208,7 +208,7 @@ public class SplashActivity extends AppCompatActivity {
 
 
                 Suggestions check = dataSnapshot.child("userSuggestions").getValue(Suggestions.class);
-                if (check == null) {
+                if (check.suggestionList == null) {
                     Suggestions userAddData = new Suggestions();
                     List<String> inName = new ArrayList<>();
                     List<String> inId = new ArrayList<>();
@@ -221,6 +221,8 @@ public class SplashActivity extends AppCompatActivity {
                     Suggestions userAddData = new Suggestions();
                     List<String> inName = check.suggestionList;
                     List<String> inId = check.codeList;
+                    System.out.println(username);
+                    System.out.println(inName);
                     inName.add(username);
                     inId.add(mAuth.getCurrentUser().getUid());
                     userAddData.suggestionList = inName;
@@ -232,7 +234,7 @@ public class SplashActivity extends AppCompatActivity {
 
             @Override
             public void onCancelled(DatabaseError databaseError) {
-                System.out.println("HIIIIIIIIIIIIIIIIIIIIIIIIIIIR Something went wrong.");
+                System.out.println("Something went wrong.");
             }
         };
         mDatabase.addListenerForSingleValueEvent(postListener);
