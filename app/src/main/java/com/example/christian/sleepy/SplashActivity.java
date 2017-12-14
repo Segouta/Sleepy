@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -20,13 +21,10 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 
-import java.sql.Time;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.List;
 
 public class SplashActivity extends AppCompatActivity {
@@ -39,7 +37,7 @@ public class SplashActivity extends AppCompatActivity {
     String email, password, confirmpassword, username;
 
     TextView emailText, passwordText, confirmPasswordText, usernameText;
-
+    ProgressBar progressBar;
     Button signupButton, loginButton, backButton;
 
     String layout = "";
@@ -70,6 +68,8 @@ public class SplashActivity extends AppCompatActivity {
 
         mAuth = FirebaseAuth.getInstance();
 
+        progressBar = findViewById(R.id.progressBarSplash);
+
         signupButton = findViewById(R.id.signInButton);
         loginButton = findViewById(R.id.logInButton);
         backButton = findViewById(R.id.backButton);
@@ -95,7 +95,7 @@ public class SplashActivity extends AppCompatActivity {
                     goToMainActivity();
 
                     // User is signed in
-                    Toast.makeText(getApplicationContext(), "redirected cause already logged in", Toast.LENGTH_SHORT).show();
+
                 }
             }
         };
@@ -165,6 +165,7 @@ public class SplashActivity extends AppCompatActivity {
                 toaster("Username already exists...");
             }
             else {
+                setVisibility("loading");
                 createAccount();
             }
         }
@@ -177,10 +178,12 @@ public class SplashActivity extends AppCompatActivity {
         else {
             email = emailText.getText().toString();
             password = passwordText.getText().toString();
-            if (email == null || email.isEmpty() || username == null || username.isEmpty()) {
+            if (email == null || email.isEmpty() || password == null || password.isEmpty()) {
                 toaster("Please fill in all fields...");
+            } else {
+                setVisibility("loading");
+                logIn();
             }
-            logIn();
         }
     }
 
@@ -244,6 +247,7 @@ public class SplashActivity extends AppCompatActivity {
     public void setVisibility(String localLayout) {
         layout = localLayout;
         if (layout.equals("buttons")) {
+            progressBar.setVisibility(View.INVISIBLE);
             emailText.setVisibility(View.INVISIBLE);
             passwordText.setVisibility(View.INVISIBLE);
             confirmPasswordText.setVisibility(View.INVISIBLE);
@@ -253,6 +257,7 @@ public class SplashActivity extends AppCompatActivity {
             backButton.setVisibility(View.INVISIBLE);
         }
         else if (layout.equals("signup")) {
+            progressBar.setVisibility(View.INVISIBLE);
             emailText.setVisibility(View.VISIBLE);
             passwordText.setVisibility(View.VISIBLE);
             confirmPasswordText.setVisibility(View.VISIBLE);
@@ -262,6 +267,7 @@ public class SplashActivity extends AppCompatActivity {
             backButton.setVisibility(View.VISIBLE);
         }
         else if (layout.equals("login")) {
+            progressBar.setVisibility(View.INVISIBLE);
             emailText.setVisibility(View.VISIBLE);
             passwordText.setVisibility(View.VISIBLE);
             confirmPasswordText.setVisibility(View.INVISIBLE);
@@ -269,6 +275,16 @@ public class SplashActivity extends AppCompatActivity {
             loginButton.setVisibility(View.VISIBLE);
             signupButton.setVisibility(View.INVISIBLE);
             backButton.setVisibility(View.VISIBLE);
+        }
+        else if (layout.equals("loading")) {
+            progressBar.setVisibility(View.VISIBLE);
+            emailText.setVisibility(View.INVISIBLE);
+            passwordText.setVisibility(View.INVISIBLE);
+            confirmPasswordText.setVisibility(View.INVISIBLE);
+            usernameText.setVisibility(View.INVISIBLE);
+            loginButton.setVisibility(View.INVISIBLE);
+            signupButton.setVisibility(View.INVISIBLE);
+            backButton.setVisibility(View.INVISIBLE);
         }
     }
 

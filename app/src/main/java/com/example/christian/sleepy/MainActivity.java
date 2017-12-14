@@ -28,6 +28,7 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.MultiAutoCompleteTextView;
+import android.widget.ProgressBar;
 import android.widget.Spinner;
 import android.widget.Switch;
 import android.widget.TextView;
@@ -43,6 +44,7 @@ import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -54,17 +56,15 @@ public class MainActivity extends AppCompatActivity {
 
     HelperMethods fb = new HelperMethods();
 
-    TextView lijst, userNameText, togoText;
+    TextView dist, userNameText, togoText;
 
     float selectedDistance;
     boolean alarmSet;
     String distance;
     Boolean shareState;
 
-    Button addButton;
-
-    Switch vibeSwitch, soundSwitch;
-
+    Button addButton, alarmButton, logoutButton, backButton, shareButton;
+    ProgressBar progressBar;
     Spinner spinner;
 
     ArrayAdapter<String> adapter;
@@ -87,6 +87,22 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        setContentView(R.layout.activity_main);
+
+        progressBar = findViewById(R.id.progressBar);
+        dist = findViewById(R.id.info);
+        userNameText = findViewById(R.id.userNameView);
+        togoText = findViewById(R.id.togoText);
+        addButton = findViewById(R.id.addButton);
+        alarmButton = findViewById(R.id.alarmButton);
+        backButton = findViewById(R.id.backButton);
+        logoutButton = findViewById(R.id.logOutButton);
+        shareButton = findViewById(R.id.shareButton);
+        spinner = findViewById(R.id.spinner);
+        searchText = findViewById(R.id.searchText);
+
+        setLayout("loading");
+
         shareState = true;
         alarmSet = false;
         selectedDistance = 500;
@@ -94,27 +110,10 @@ public class MainActivity extends AppCompatActivity {
 
         final InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
 
-        setContentView(R.layout.activity_main);
-        lijst = findViewById(R.id.info);
-        userNameText = findViewById(R.id.userNameView);
-        togoText = findViewById(R.id.togoText);
-
-        addButton = findViewById(R.id.addButton);
-
-        lijst.setVisibility(View.INVISIBLE);
-        togoText.setVisibility(View.INVISIBLE);
-        addButton.setVisibility(View.VISIBLE);
-
         stationSuggestions = getSuggestions().get(0);
         codes = getSuggestions().get(1);
-
         userSuggestions = getUserSuggestions().get(0);
         userIds = getUserSuggestions().get(1);
-
-        spinner = findViewById(R.id.spinner);
-
-        vibeSwitch = findViewById(R.id.vibeSwitch);
-        soundSwitch = findViewById(R.id.soundSwitch);
 
         data.Lon = "0.0000";
         data.Lat = "0.0000";
@@ -122,14 +121,12 @@ public class MainActivity extends AppCompatActivity {
         mAuth = FirebaseAuth.getInstance();
         Log.d("xdtcfgvh", "onCreate: " + String.valueOf(stationSuggestions.size()));
 
-
-        searchText = findViewById(R.id.searchText);
         mDatabase = FirebaseDatabase.getInstance().getReference();
 
-
-        lijst.setMovementMethod(new ScrollingMovementMethod());
+        dist.setMovementMethod(new ScrollingMovementMethod());
         searchText.setAdapter(adapter);
         searchText.setTokenizer(new MultiAutoCompleteTextView.CommaTokenizer());
+
         setListener();
 
         locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
@@ -152,10 +149,10 @@ public class MainActivity extends AppCompatActivity {
                 float distanceInMeters = phoneLocation.distanceTo(targetLocation);
                 int distanceInMetersRound = Math.round(distanceInMeters);
                 if (distanceInMeters < 2000) {
-                    lijst.setText(Integer.toString(Math.round(distanceInMetersRound)) + " m");
+                    dist.setText(Integer.toString(Math.round(distanceInMetersRound)) + " m");
                 }
                 else{
-                    lijst.setText(Double.toString(round(distanceInMeters / 1000, 1)) + " km");
+                    dist.setText(Double.toString(round(distanceInMeters / 1000, 1)) + " km");
                 }
 
                 if (alarmSet && distanceInMeters < selectedDistance) {
@@ -190,7 +187,7 @@ public class MainActivity extends AppCompatActivity {
             public void onItemClick (AdapterView<?> parent, View view, int position, long id) {
                 String toFind = parent.getItemAtPosition(position).toString();
 
-                lijst.setVisibility(View.VISIBLE);
+                dist.setVisibility(View.VISIBLE);
                 togoText.setVisibility(View.VISIBLE);
 
                 System.out.println("tofind: " + toFind);
@@ -223,7 +220,74 @@ public class MainActivity extends AppCompatActivity {
         getLocation();
 
         fb.stationListUpdate(this);
-        fb.getUsername(mAuth, userNameText);
+        getUsername();
+    }
+
+    public void getUsername() {
+        ValueEventListener postListener = new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                // get from db
+                String gotUsername = dataSnapshot.child("users").child(mAuth.getUid()).child("username").getValue().toString();
+
+                userNameText.setText("Welcome back, " + gotUsername);
+
+                setLayout("main");
+
+                dist.setVisibility(View.INVISIBLE);
+                togoText.setVisibility(View.INVISIBLE);
+                addButton.setVisibility(View.VISIBLE);
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                System.out.println("HIIIIIIIIIIIIIIIIIIIIIIIIIIIR Something went wrong.");
+            }
+        };
+        mDatabase.addValueEventListener(postListener);
+    }
+
+    public void setLayout(String type) {
+        if (type.equals("loading")){
+
+            progressBar.setVisibility(View.VISIBLE);
+            dist.setVisibility(View.INVISIBLE);
+            userNameText.setVisibility(View.INVISIBLE);
+            togoText.setVisibility(View.INVISIBLE);
+            addButton.setVisibility(View.INVISIBLE);
+            spinner.setVisibility(View.INVISIBLE);
+            searchText.setVisibility(View.INVISIBLE);
+            logoutButton.setVisibility(View.INVISIBLE);
+            backButton.setVisibility(View.INVISIBLE);
+            alarmButton.setVisibility(View.INVISIBLE);
+            shareButton.setVisibility(View.INVISIBLE);
+        }
+        else if (type.equals("main")){
+            progressBar.setVisibility(View.INVISIBLE);
+            dist.setVisibility(View.VISIBLE);
+            userNameText.setVisibility(View.VISIBLE);
+            togoText.setVisibility(View.VISIBLE);
+            addButton.setVisibility(View.VISIBLE);
+            spinner.setVisibility(View.VISIBLE);
+            searchText.setVisibility(View.VISIBLE);
+            logoutButton.setVisibility(View.VISIBLE);
+            backButton.setVisibility(View.VISIBLE);
+            alarmButton.setVisibility(View.VISIBLE);
+            shareButton.setVisibility(View.VISIBLE);
+        }
+        else if (type.equals("sleeping")){
+            progressBar.setVisibility(View.INVISIBLE);
+            dist.setVisibility(View.INVISIBLE);
+            userNameText.setVisibility(View.INVISIBLE);
+            togoText.setVisibility(View.INVISIBLE);
+            addButton.setVisibility(View.INVISIBLE);
+            spinner.setVisibility(View.INVISIBLE);
+            searchText.setVisibility(View.INVISIBLE);
+            logoutButton.setVisibility(View.INVISIBLE);
+            backButton.setVisibility(View.INVISIBLE);
+            alarmButton.setVisibility(View.INVISIBLE);
+            shareButton.setVisibility(View.INVISIBLE);
+        }
 
     }
 
@@ -286,12 +350,10 @@ public class MainActivity extends AppCompatActivity {
                 if (user != null) {
 
                     // User is signed in
-
-                    Toast.makeText(getApplicationContext(), "redirected cause already logged in", Toast.LENGTH_SHORT).show();
-
+                    Log.d("setListener", "signed in so redirected");
                 }
                 else {
-                    Toast.makeText(getApplicationContext(), "redirected cause not logged in", Toast.LENGTH_SHORT).show();
+                   toaster("You were redirected, because you were logged out.");
                     goToSplashActivity();
                 }
             }
@@ -314,7 +376,7 @@ public class MainActivity extends AppCompatActivity {
                 StationData stationData = dataSnapshot.child("stations").child(stationCode).getValue(StationData.class);
 
                 togoText.setVisibility(View.VISIBLE);
-                lijst.setVisibility(View.VISIBLE);
+                dist.setVisibility(View.VISIBLE);
                 data = stationData;
                 System.out.println(stationData.Code);
             }
@@ -336,7 +398,7 @@ public class MainActivity extends AppCompatActivity {
     public void deleteButton(View view) {
         searchText.setText("");
         togoText.setVisibility(View.INVISIBLE);
-        lijst.setVisibility(View.INVISIBLE);
+        dist.setVisibility(View.INVISIBLE);
     }
 
     public void setClicked(View view) {
@@ -358,6 +420,7 @@ public class MainActivity extends AppCompatActivity {
                 .setMessage("Traveling to " + data.names.get(1) + ", waking up " + distance + " before arrival.")
                 .setPositiveButton("Set alarm!", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int which) {
+                        setLayout("sleeping");
                         alarmSet = true;
 //                        toaster(String.valueOf(vibeSwitch.isChecked()));
 //                        toaster(String.valueOf(soundSwitch.isChecked()));
@@ -379,13 +442,13 @@ public class MainActivity extends AppCompatActivity {
             searchText.setHint("Wake-up destionation...");
             addButton.setVisibility(View.VISIBLE);
             searchText.setAdapter(adapter);
-//            searchText.setTokenizer(new MultiAutoCompleteTextView.CommaTokenizer());
+
         }
         else {
             searchText.setHint("Search sleepy user...");
             addButton.setVisibility(View.INVISIBLE);
             searchText.setAdapter(adapter2);
-//            searchText.setTokenizer(new MultiAutoCompleteTextView.CommaTokenizer());
+
         }
 
     }
@@ -506,7 +569,8 @@ public class MainActivity extends AppCompatActivity {
                 System.out.println(userFavorites);
 
                 if (userFavorites != null) {
-
+                    TextView title = findViewById(R.id.favoTitle);
+                    title.setText(username + "'s favorite sleep-through stations:");
                     final Dialog dialog = new Dialog(MainActivity.this);
                     dialog.setContentView(R.layout.custom_list);
                     dialog.setTitle("Title...");

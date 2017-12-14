@@ -41,7 +41,6 @@ import java.util.Map;
 public class HelperMethods {
 
     private DatabaseReference mDatabase = FirebaseDatabase.getInstance().getReference();
-
     private String stationInfo = "";
 
 //    Only update if firebase is 4 days not updated, to prevent NS API from overrequest.
@@ -53,24 +52,6 @@ public class HelperMethods {
 
     private List<String> suggestionList = new ArrayList<>();
     private List<String> codeList = new ArrayList<>();
-
-    public void getUsername(final FirebaseAuth mAuth, final TextView userNameText) {
-        ValueEventListener postListener = new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                // get from db
-                String gotUsername = dataSnapshot.child("users").child(mAuth.getUid()).child("username").getValue().toString();
-
-                userNameText.setText("Welcome back, " + gotUsername);
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-                System.out.println("HIIIIIIIIIIIIIIIIIIIIIIIIIIIR Something went wrong.");
-            }
-        };
-        mDatabase.addValueEventListener(postListener);
-    }
 
     public void addToDB(StationData data) {
 
