@@ -208,7 +208,7 @@ public class SplashActivity extends AppCompatActivity {
 
 
                 Suggestions check = dataSnapshot.child("userSuggestions").getValue(Suggestions.class);
-                if (check.suggestionList == null) {
+                if (check == null) {
                     Suggestions userAddData = new Suggestions();
                     List<String> inName = new ArrayList<>();
                     List<String> inId = new ArrayList<>();

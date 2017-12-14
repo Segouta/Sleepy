@@ -1,8 +1,12 @@
 package com.example.christian.sleepy;
 
+import android.app.Dialog;
 import android.content.Context;
+import android.text.format.DateFormat;
 import android.util.Base64;
 import android.util.Log;
+import android.widget.ArrayAdapter;
+import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -26,7 +30,10 @@ import org.xmlpull.v1.XmlPullParserFactory;
 
 import java.io.IOException;
 import java.io.StringReader;
+import java.sql.Time;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -36,6 +43,11 @@ public class HelperMethods {
     private DatabaseReference mDatabase = FirebaseDatabase.getInstance().getReference();
 
     private String stationInfo = "";
+
+//    Only update if firebase is 4 days not updated, to prevent NS API from overrequest.
+    int updateAmount = 4;
+    boolean update = false;
+    long millisecPerDay = 86400000;
 
     private Suggestions suggestions = new Suggestions();
 
@@ -65,11 +77,46 @@ public class HelperMethods {
         mDatabase.child("stations").child(data.Code).setValue(data);
     }
 
+    public void stationListUpdate(final Context context) {
+        final Date now = Calendar.getInstance().getTime();
+
+        ValueEventListener postListener = new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                if (dataSnapshot.child("updateTime").getValue(Date.class) == null) {
+                    mDatabase.child("updateTime").setValue(now);
+                    update = true;
+
+                } else {
+                    Date then = dataSnapshot.child("updateTime").getValue(Date.class);
+                    if(Math.abs((now.getTime()-then.getTime())/millisecPerDay) > updateAmount) {
+                        update = true;
+                        mDatabase.child("updateTime").setValue(now);
+                    } else {
+                        update = false;
+                    }
+                }
+                if (update == true) {
+                    stationListRequest(context);
+                }
+
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                System.out.println("Something went wrong.");
+            }
+        };
+        mDatabase.addListenerForSingleValueEvent(postListener);
+    }
+
     public void stationListRequest(Context context) {
+
+        System.out.println("=====================================FB updating");
 
         // Instantiate the RequestQueue.
         RequestQueue queue = Volley.newRequestQueue(context);
-        String url ="http://christianbijvoets@gmail.com:LBSjuDJ1khvavr8TSq-zAE8uz61NX60ja_VzSWDRFvuq9gk0bJmzFg@webservices.ns.nl/ns-api-stations-v2";
+        String url = "http://christianbijvoets@gmail.com:LBSjuDJ1khvavr8TSq-zAE8uz61NX60ja_VzSWDRFvuq9gk0bJmzFg@webservices.ns.nl/ns-api-stations-v2";
 
         // Request a string response from the provided URL.
         StringRequest stringRequest = new StringRequest(Request.Method.GET, url,
@@ -94,8 +141,7 @@ public class HelperMethods {
                 Log.d("helpers", "did not work...");
                 // lijst.setText("That didn't work!");
             }
-        })
-        {
+        }) {
             @Override
             public Map<String, String> getHeaders() throws AuthFailureError {
                 Map<String, String> headers = new HashMap<>();
@@ -110,6 +156,7 @@ public class HelperMethods {
 
         // Add the request to the RequestQueue.
         queue.add(stringRequest);
+
     }
 
     public void XMLtoDB() throws XmlPullParserException, IOException {

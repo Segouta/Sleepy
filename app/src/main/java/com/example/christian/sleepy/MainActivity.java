@@ -222,10 +222,7 @@ public class MainActivity extends AppCompatActivity {
 
         getLocation();
 
-        if(mDatabase == null)
-            Log.d("test", "db is null");
-
-//        fb.stationListRequest(this);
+        fb.stationListUpdate(this);
         fb.getUsername(mAuth, userNameText);
 
     }
@@ -473,10 +470,7 @@ public class MainActivity extends AppCompatActivity {
                 codeList = dataSnapshot.child("userSuggestions").getValue(Suggestions.class).codeList;
                 userSuggestions = suggestionList;
                 userIds = codeList;
-//                System.out.println("vanaf hier:------------------------------------------------------");
-//                for (int i = 0; i < suggestion.suggestionList.size(); i++) {
-//                    System.out.println(suggestion.suggestionList.get(i));
-//                }
+
                 adapter2 = new ArrayAdapter<String>(getApplicationContext(),
                         android.R.layout.simple_dropdown_item_1line, suggestionList);
             }
@@ -511,13 +505,18 @@ public class MainActivity extends AppCompatActivity {
                 List<String> userFavorites = dataSnapshot.child("users").child(userId).getValue(UserData.class).favorites;
                 System.out.println(userFavorites);
 
-                final Dialog dialog = new Dialog(MainActivity.this);
-                dialog.setContentView(R.layout.custom_list);
-                dialog.setTitle("Title...");
-                ListView list = (ListView) dialog.findViewById(R.id.listView);
-                ArrayAdapter<String> adapter3 = new ArrayAdapter(MainActivity.this, android.R.layout.simple_list_item_1, userFavorites);
-                list.setAdapter(adapter3);
-                dialog.show();
+                if (userFavorites != null) {
+
+                    final Dialog dialog = new Dialog(MainActivity.this);
+                    dialog.setContentView(R.layout.custom_list);
+                    dialog.setTitle("Title...");
+                    ListView list = (ListView) dialog.findViewById(R.id.listView);
+                    ArrayAdapter<String> adapter3 = new ArrayAdapter(MainActivity.this, android.R.layout.simple_list_item_1, userFavorites);
+                    list.setAdapter(adapter3);
+                    dialog.show();
+                } else {
+                    toaster(username + " has no favorites yet!");
+                }
 
             }
 
