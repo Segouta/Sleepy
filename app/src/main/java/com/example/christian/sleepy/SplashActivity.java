@@ -197,7 +197,7 @@ public class SplashActivity extends AppCompatActivity {
 
         FirebaseUser user = mAuth.getCurrentUser();
 
-        UserData data = new UserData(username, email, password, Calendar.getInstance().getTime(), null);
+        UserData data = new UserData(username, email, password, Calendar.getInstance().getTime(), new ArrayList<String>());
 
         mDatabase.child("users").child(user.getUid()).setValue(data);
 

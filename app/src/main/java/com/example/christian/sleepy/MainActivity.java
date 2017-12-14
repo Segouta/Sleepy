@@ -410,6 +410,7 @@ public class MainActivity extends AppCompatActivity {
                 .setMessage("Are you sure you want to add " + data.names.get(1) + " to your favorites?")
                 .setPositiveButton("Add!", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int which) {
+                        fb.addToFavorites(data.names.get(1), mAuth);
                         toaster("Added " + data.names.get(1) + " to your favorites!");
                     }
                 })

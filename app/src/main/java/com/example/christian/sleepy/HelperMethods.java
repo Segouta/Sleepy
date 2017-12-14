@@ -14,6 +14,7 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -27,6 +28,7 @@ import org.xmlpull.v1.XmlPullParserFactory;
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -185,7 +187,43 @@ public class HelperMethods {
         mDatabase.child("suggestions").setValue(suggestions);
     }
 
+    public void addToFavorites(final String toAdd, final FirebaseAuth mAuth) {
 
+        ValueEventListener postListener = new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                // get from db
+
+                UserData data = dataSnapshot.child("users").child(mAuth.getCurrentUser().getUid()).getValue(UserData.class);
+
+                if (data.favorites == null) {
+                    System.out.println("nothin here yet");
+                    List<String> inName = new ArrayList<>();
+                    inName.add(toAdd);
+                    data.favorites = inName;
+                    mDatabase.child("users").child(mAuth.getCurrentUser().getUid()).setValue(data);
+
+                } else {
+                    System.out.println("already things here");
+//                    Suggestions userAddData = new Suggestions();
+//                    List<String> inName = check.suggestionList;
+//                    List<String> inId = check.codeList;
+//                    inName.add(toAdd);
+//                    inId.add(mAuth.getCurrentUser().getUid());
+//                    userAddData.suggestionList = inName;
+//                    userAddData.codeList = inId;
+//                    mDatabase.child("userSuggestions").setValue(userAddData);
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                System.out.println("Something went wrong.");
+            }
+        };
+        mDatabase.addListenerForSingleValueEvent(postListener);
+
+    }
 
     public List<List<String>> getUserSuggestions() {
 
