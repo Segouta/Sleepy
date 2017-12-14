@@ -195,9 +195,13 @@ public class MainActivity extends AppCompatActivity {
                 System.out.println("tofind: " + toFind);
 
                 searchText.setText(toFind);
-                getStationInfo(codes.get(stationSuggestions.indexOf(toFind)));
-                imm.hideSoftInputFromWindow(getCurrentFocus().getWindowToken(),InputMethodManager.HIDE_NOT_ALWAYS);
 
+                if (shareState) {
+                    getStationInfo(codes.get(stationSuggestions.indexOf(toFind)));
+                    imm.hideSoftInputFromWindow(getCurrentFocus().getWindowToken(),InputMethodManager.HIDE_NOT_ALWAYS);
+                } else {
+                    getUserFavorites(toFind);
+                }
 
             }
         });
@@ -373,9 +377,6 @@ public class MainActivity extends AppCompatActivity {
     public void shareClicked(View view) {
         shareState = !shareState;
 
-        toaster ("hoi");
-        Log.d("hoi", "hoi");
-
         if (shareState) {
             searchText.setHint("Wake-up destionation...");
             addButton.setVisibility(View.VISIBLE);
@@ -494,5 +495,10 @@ public class MainActivity extends AppCompatActivity {
         System.out.println("getSUggestions done");
 
         return totList;
+    }
+
+    public void getUserFavorites(String username) {
+
+        Log.d("getUFavs", username);
     }
 }

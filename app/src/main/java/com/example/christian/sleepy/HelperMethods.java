@@ -186,8 +186,6 @@ public class HelperMethods {
 
     public void addToFavorites(final String toAdd, final FirebaseAuth mAuth) {
 
-        System.out.println("inAddToFavs");
-        Log.d("hier", "indeaddvafs");
         ValueEventListener postListener = new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
@@ -218,32 +216,6 @@ public class HelperMethods {
         };
         mDatabase.addListenerForSingleValueEvent(postListener);
 
-    }
-
-    public List<List<String>> getUserSuggestions() {
-
-        ValueEventListener postListener = new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-
-                suggestionList = dataSnapshot.child("userSuggestions").getValue(Suggestions.class).suggestionList;
-                codeList = dataSnapshot.child("userSuggestions").getValue(Suggestions.class).codeList;
-
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-                System.out.println("Something went wrong.");
-            }
-        };
-        mDatabase.addValueEventListener(postListener);
-
-
-        List<List<String>> totList = new ArrayList<List<String>>();
-        totList.add(suggestionList);
-        totList.add(codeList);
-
-        return totList;
     }
 
 }
