@@ -497,8 +497,28 @@ public class MainActivity extends AppCompatActivity {
         return totList;
     }
 
-    public void getUserFavorites(String username) {
+    public void getUserFavorites(final String username) {
 
         Log.d("getUFavs", username);
+
+        ValueEventListener postListener = new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+
+                Suggestions userSuggestions = dataSnapshot.child("userSuggestions").getValue(Suggestions.class);
+                String userId = userSuggestions.codeList.get(userSuggestions.suggestionList.indexOf(username));
+                List<String> userFavorites = dataSnapshot.child("users").child(userId).getValue(UserData.class).favorites;
+                System.out.println(userFavorites);
+
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                System.out.println("Something went wrong.");
+            }
+        };
+        mDatabase.addValueEventListener(postListener);
+
+
     }
 }
