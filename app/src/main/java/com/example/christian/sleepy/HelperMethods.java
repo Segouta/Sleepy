@@ -4,6 +4,7 @@ import android.content.Context;
 import android.util.Base64;
 import android.util.Log;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.android.volley.AuthFailureError;
 import com.android.volley.Request;
@@ -203,9 +204,13 @@ public class HelperMethods {
                 } else {
                     System.out.println("already things here");
                     List<String> inName = data.favorites;
-                    inName.add(toAdd);
-                    data.favorites = inName;
-                    mDatabase.child("users").child(mAuth.getCurrentUser().getUid()).setValue(data);
+                    if (inName.contains(toAdd)) {
+                        System.out.println("already in favs");
+                    } else {
+                        inName.add(toAdd);
+                        data.favorites = inName;
+                        mDatabase.child("users").child(mAuth.getCurrentUser().getUid()).setValue(data);
+                    }
                 }
             }
 

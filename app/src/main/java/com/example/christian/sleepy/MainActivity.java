@@ -3,6 +3,7 @@ package com.example.christian.sleepy;
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
+import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -18,11 +19,14 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.method.ScrollingMovementMethod;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.Adapter;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.ListView;
 import android.widget.MultiAutoCompleteTextView;
 import android.widget.Spinner;
 import android.widget.Switch;
@@ -107,10 +111,7 @@ public class MainActivity extends AppCompatActivity {
         userSuggestions = getUserSuggestions().get(0);
         userIds = getUserSuggestions().get(1);
 
-
         spinner = findViewById(R.id.spinner);
-
-
 
         vibeSwitch = findViewById(R.id.vibeSwitch);
         soundSwitch = findViewById(R.id.soundSwitch);
@@ -509,6 +510,14 @@ public class MainActivity extends AppCompatActivity {
                 String userId = userSuggestions.codeList.get(userSuggestions.suggestionList.indexOf(username));
                 List<String> userFavorites = dataSnapshot.child("users").child(userId).getValue(UserData.class).favorites;
                 System.out.println(userFavorites);
+
+                final Dialog dialog = new Dialog(MainActivity.this);
+                dialog.setContentView(R.layout.custom_list);
+                dialog.setTitle("Title...");
+                ListView list = (ListView) dialog.findViewById(R.id.listView);
+                ArrayAdapter<String> adapter3 = new ArrayAdapter(MainActivity.this, android.R.layout.simple_list_item_1, userFavorites);
+                list.setAdapter(adapter3);
+                dialog.show();
 
             }
 
