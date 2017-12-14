@@ -189,14 +189,13 @@ public class MainActivity extends AppCompatActivity {
             public void onItemClick (AdapterView<?> parent, View view, int position, long id) {
                 String toFind = parent.getItemAtPosition(position).toString();
 
-                dist.setVisibility(View.VISIBLE);
-                togoText.setVisibility(View.VISIBLE);
-
                 System.out.println("tofind: " + toFind);
 
                 searchText.setText(toFind);
 
                 if (shareState) {
+                    dist.setVisibility(View.VISIBLE);
+                    togoText.setVisibility(View.VISIBLE);
                     getStationInfo(codes.get(stationSuggestions.indexOf(toFind)));
                     imm.hideSoftInputFromWindow(getCurrentFocus().getWindowToken(),InputMethodManager.HIDE_NOT_ALWAYS);
                 } else {
@@ -445,12 +444,18 @@ public class MainActivity extends AppCompatActivity {
 
         if (shareState) {
             searchText.setHint("Wake-up destionation...");
+            searchText.setText("");
+            togoText.setVisibility(View.VISIBLE);
+            dist.setVisibility(View.VISIBLE);
             addButton.setVisibility(View.VISIBLE);
             searchText.setAdapter(adapter);
 
         }
         else {
             searchText.setHint("Search sleepy user...");
+            searchText.setText("");
+            togoText.setVisibility(View.INVISIBLE);
+            dist.setVisibility(View.INVISIBLE);
             addButton.setVisibility(View.INVISIBLE);
             searchText.setAdapter(adapter2);
 
@@ -605,7 +610,7 @@ public class MainActivity extends AppCompatActivity {
         // Vibrate for 500 milliseconds
         long[] pattern = {50, 100, 50, 100, 300, 100, 300, 100};
         mp.start();
-//        v.vibrate(pattern, 0);
+        v.vibrate(pattern, 0);
         AlertDialog.Builder builder;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             builder = new AlertDialog.Builder(this, android.R.style.Theme_Material_Dialog_Alert);
