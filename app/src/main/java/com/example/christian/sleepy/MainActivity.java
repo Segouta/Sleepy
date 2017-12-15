@@ -472,7 +472,7 @@ public class MainActivity extends AppCompatActivity {
 
         // set to correct values and visibilities
         if (shareState) {
-            searchText.setHint("Wake-up destionation...");
+            searchText.setHint("Wake-up destination...");
             searchText.setText("");
             togoText.setVisibility(View.VISIBLE);
             dist.setVisibility(View.VISIBLE);

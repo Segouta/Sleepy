@@ -1,4 +1,4 @@
-[logo picture]
+<img src="https://github.com/Segouta/Sleepy/blob/master/app/src/main/res/drawable/logo.png" alt="logo" width="150" height="150")
 
 ##
 
@@ -30,41 +30,45 @@ To clarify the use of the app even more, some screenshots are provided:
 
 The splash page:
 
-[login screen][login][signup]
+![login screen](https://github.com/Segouta/Sleepy/blob/master/doc/splash.jpeg)
+![login](https://github.com/Segouta/Sleepy/blob/master/doc/login.jpeg)
+![signup](https://github.com/Segouta/Sleepy/blob/master/doc/signup.jpeg)
 
 Loading screen:
 
-[loading screen]
+![loading screen](https://github.com/Segouta/Sleepy/blob/master/doc/loading.jpeg)
 
 Main activity:
 
-[main activity]
+![main activity](https://github.com/Segouta/Sleepy/blob/master/doc/mainstation.jpeg)
 
 Searching for station:
 
-[searching for station empty][searching for station suggestions]
+![searching for station suggestions](https://github.com/Segouta/Sleepy/blob/master/doc/stationsuggestions.jpeg)
 
 Adding and getting favorites:
 
-[adding favorites][getting users favorites]
+![adding favorites](https://github.com/Segouta/Sleepy/blob/master/doc/confirmadd.jpeg)
+![getting users favorites](https://github.com/Segouta/Sleepy/blob/master/doc/favoriteslist.jpeg)
 
 Searching for user:
 
-[searching for user empty][searching for user suggestions]
+![searching for user empty](https://github.com/Segouta/Sleepy/blob/master/doc/mainuser.jpeg)
+![searching for user suggestions](https://github.com/Segouta/Sleepy/blob/master/doc/usersuggestions.jpeg)
 
 Displaying distance info:
 
-[station chosen]
+![station chosen](https://github.com/Segouta/Sleepy/blob/master/doc/stationselected.jpeg)
 
 Setting alarm:
 
-[setting alarm popup]
+![setting alarm popup](https://github.com/Segouta/Sleepy/blob/master/doc/summary.jpeg)
 
 Sleeping screen:
 
-[sleeping screen]
+![sleeping screen](https://github.com/Segouta/Sleepy/blob/master/doc/sleeping.jpeg)
 
 Being woken up:
 
-[alarm popup]
+![alarm popup](https://github.com/Segouta/Sleepy/blob/master/doc/alarmdialog.jpeg)
 
