@@ -2,11 +2,11 @@
 
 ##
 
-By: Christian
+By:       Christian
 
-Date: 15-12-2017
+Date:     15-12-2017
 
-Subject: Native App Studio
+Subject:  Native App Studio
 
 ##
 
