@@ -1,11 +1,11 @@
+/**
+ * Created by Christian on 7-12-2017
+ */
+
 package com.example.christian.sleepy;
 
 import java.util.Date;
 import java.util.List;
-
-/**
- * Created by Christian on 7-12-2017.
- */
 
 public class UserData {
 

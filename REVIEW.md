@@ -1,7 +1,5 @@
 Reviewed by David Van Grinsven:
 
-OVERAL COMMENTS!!
-
 Geen system.out of logd, behalve waar echt handig voor debug!
 Geen ge-uncommende code!
 

@@ -1,10 +1,10 @@
+/**
+ * Created by Christian on 12-12-2017
+ */
+
 package com.example.christian.sleepy;
 
 import java.util.List;
-
-/**
- * Created by Christian on 12-12-2017.
- */
 
 public class Suggestions {
 

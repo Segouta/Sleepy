@@ -1,3 +1,9 @@
+/**
+ * By Christian Bijvoets
+ * Minor Programmeren UvA 2017
+ * This is the splash file for the Sleepy-app. It contains mainly login and sign up functions.
+ */
+
 package com.example.christian.sleepy;
 
 import android.content.Intent;

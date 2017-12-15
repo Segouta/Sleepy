@@ -1,3 +1,9 @@
+/**
+ * By Christian Bijvoets
+ * Minor Programmeren UvA 2017
+ * This is the main file for the Sleepy-app. It contains mainly button listeners and gps functions.
+ */
+
 package com.example.christian.sleepy;
 
 import android.Manifest;
