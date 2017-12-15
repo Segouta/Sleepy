@@ -8,6 +8,8 @@ Date:     15-12-2017
 
 Subject:  Native App Studio
 
+Bettercode: [![BCH compliance](https://bettercodehub.com/edge/badge/Segouta/Sleepy?branch=master)](https://bettercodehub.com/)
+
 ##
 
 Are you one of the many people who want to use their wasted time in the train to sleep a little extra, but does not try it because you are scared to sleep through your station?
@@ -31,7 +33,6 @@ Functionality notes:
 - When the alarm is set, only the distance and a reset button are showing, next to the stunning logo of course.
 - If the add button is clicked, the currently chosen station is added to the favorites. If the station was already in the list, it will not be duplicated.
 - If a user is searched an clicked, a pop up window will show the list of favorites. But if the user has no favorites, only a toast will be given to inform the user about this.
-- [![BCH compliance](https://bettercodehub.com/edge/badge/Segouta/Sleepy?branch=master)](https://bettercodehub.com/)
 
 ##
 
