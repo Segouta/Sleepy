@@ -1,4 +1,4 @@
-<img src="https://github.com/Segouta/Sleepy/blob/master/app/src/main/res/drawable/logo.png" alt="logo" width="150" height="150")
+<img src="doc/logo.png" alt="logo" width="150" height="150")
 
 ##
 
