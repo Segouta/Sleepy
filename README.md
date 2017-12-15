@@ -2,6 +2,12 @@
 
 ##
 
+By: Christian
+Date: 15-12-2017
+Subject: Native App Studio
+
+##
+
 Are you one of the many people who want to use their wasted time in the train to sleep a little extra, but does not try it because you are scared to sleep through your station?
 With Sleepy, your fears are no longer needed! This app wakes you up when you approach your station. Share your favorite stations with the world so your friends can see them!
 
