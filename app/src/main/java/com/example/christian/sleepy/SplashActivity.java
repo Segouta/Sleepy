@@ -10,7 +10,6 @@ import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
-
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
@@ -22,38 +21,36 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
-
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 
 public class SplashActivity extends AppCompatActivity {
 
+    // create all needed variables
     private FirebaseAuth mAuth;
     private FirebaseAuth.AuthStateListener mAuthListener;
-
     private DatabaseReference mDatabase;
 
-    String email, password, confirmpassword, username;
+    String email, password, confirmpassword, username, layout;
 
     TextView emailText, passwordText, confirmPasswordText, usernameText;
     ProgressBar progressBar;
     Button signupButton, loginButton, backButton;
-
-    String layout = "";
 
     boolean returnCode;
 
     @Override
     public void onStart() {
         super.onStart();
-        // Check if user is signed in (non-null) and update UI accordingly.
+        // check if user is signed in (non-null) and update UI accordingly
         mAuth.addAuthStateListener(mAuthListener);
     }
 
     @Override
     public void onStop() {
         super.onStop();
+        // remove the authlistener if it was present on and of activity
         if (mAuthListener != null) {
             mAuth.removeAuthStateListener(mAuthListener);
         }
@@ -64,21 +61,21 @@ public class SplashActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_splash);
 
+        // firebase necessities
         mDatabase = FirebaseDatabase.getInstance().getReference();
-
         mAuth = FirebaseAuth.getInstance();
 
+        // find all views
         progressBar = findViewById(R.id.progressBarSplash);
-
         signupButton = findViewById(R.id.signInButton);
         loginButton = findViewById(R.id.logInButton);
         backButton = findViewById(R.id.backButton);
-
         emailText = findViewById(R.id.emailText);
         passwordText = findViewById(R.id.passwordText);
         confirmPasswordText = findViewById(R.id.passwordCheckText);
         usernameText = findViewById(R.id.usernameText);
 
+        // set the initial layout of buttons etc
         setVisibility("buttons");
 
         // initialize auth listener
@@ -86,28 +83,28 @@ public class SplashActivity extends AppCompatActivity {
             @Override
             public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
                 FirebaseUser user = firebaseAuth.getCurrentUser();
-                if (user != null) {
 
+                // check if user is signed in
+                if (user != null) {
+                    // change display name (for future use)
                     UserProfileChangeRequest profileUpdates = new UserProfileChangeRequest.Builder()
                             .setDisplayName(username).build();
                     user.updateProfile(profileUpdates);
-                    
+
                     goToMainActivity();
-
-                    // User is signed in
-
                 }
             }
         };
     }
 
     public void createAccount() {
+        // create new account with the email and password
         mAuth.createUserWithEmailAndPassword(email, password)
                 .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
                     @Override
                     public void onComplete(@NonNull Task<AuthResult> task) {
                         if (task.isSuccessful()) {
-                            // Sign in success, update UI with the signed-in user's information
+                            // sign in success, add user to firebase
                             Log.d("Created User", "createUserWithEmail:success");
                             Toast.makeText(SplashActivity.this, "Created User: " + email,
                                     Toast.LENGTH_SHORT).show();
@@ -115,10 +112,12 @@ public class SplashActivity extends AppCompatActivity {
                             addUserToDB();
 
                         } else {
-                            // If sign in fails, display a message to the user.
+                            // if sign in fails, display a message to the user
                             Log.w("Creating user failed", "createUserWithEmail:failure", task.getException());
                             Toast.makeText(SplashActivity.this, "Failed to create new user...",
                                     Toast.LENGTH_SHORT).show();
+
+                            // reset layout to try again
                             setVisibility("signup");
 
                         }
@@ -127,12 +126,13 @@ public class SplashActivity extends AppCompatActivity {
     }
 
     public void logIn() {
+        // login with the email and password
         mAuth.signInWithEmailAndPassword(email, password)
                 .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
                     @Override
                     public void onComplete(@NonNull Task<AuthResult> task) {
                         if (task.isSuccessful()) {
-                            // Sign in success, update UI with the signed-in user's information
+                            // sign in successful, the previously set listener will automatically take over from here
                             Log.d("Signed In", "signInWithEmail:success");
 
                         } else {
@@ -148,6 +148,7 @@ public class SplashActivity extends AppCompatActivity {
     }
 
     public void signClicked(View view) {
+        // if the sign up button was clicked, this checks if fields were filled in valid
         if (layout.equals("buttons")) {
             setVisibility("signup");
         }
@@ -170,6 +171,7 @@ public class SplashActivity extends AppCompatActivity {
                 toaster("Password must contain at least 7 characters");
             }
             else {
+                // set layout to loading screen and create account
                 setVisibility("loading");
                 createAccount();
             }
@@ -177,6 +179,7 @@ public class SplashActivity extends AppCompatActivity {
     }
 
     public void logClicked(View view) {
+        // if the login button was clicked, this checks if all fields were filled in valid
         if (layout.equals("buttons")) {
             setVisibility("login");
         }
@@ -186,6 +189,7 @@ public class SplashActivity extends AppCompatActivity {
             if (email == null || email.isEmpty() || password == null || password.isEmpty()) {
                 toaster("Please fill in all fields...");
             } else {
+                // set layout to loading screen and log in
                 setVisibility("loading");
                 logIn();
             }
@@ -193,29 +197,36 @@ public class SplashActivity extends AppCompatActivity {
     }
 
     public void backClicked(View view) {
+        // when the back button was clicked, this loads the appropriate layout with just buttons
         setVisibility("buttons");
     }
 
     public void goToMainActivity() {
+        // does what it's called
         startActivity(new Intent(SplashActivity.this, MainActivity.class));
         finish();
     }
 
     public void addUserToDB() {
-
+        // adds user to database
         FirebaseUser user = mAuth.getCurrentUser();
 
+        // create new UserData object
         UserData data = new UserData(username, email, password, Calendar.getInstance().getTime(), new ArrayList<String>());
 
+        // store UserData object in firebase
         mDatabase.child("users").child(user.getUid()).setValue(data);
 
+        // updates list with all users and list with corresponding ID's for suggestion textview
         ValueEventListener postListener = new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 // get from db
 
-
+                // get Suggestions object from firebase
                 Suggestions check = dataSnapshot.child("userSuggestions").getValue(Suggestions.class);
+
+                // if it does not exist, create it and store lists in it, else append to existing lists
                 if (check == null) {
                     Suggestions userAddData = new Suggestions();
                     List<String> inName = new ArrayList<>();
@@ -250,6 +261,7 @@ public class SplashActivity extends AppCompatActivity {
     }
 
     public void setVisibility(String localLayout) {
+        // set the layout of the splash activity to the right format with buttons and text fields
         layout = localLayout;
         if (layout.equals("buttons")) {
             progressBar.setVisibility(View.INVISIBLE);
@@ -294,12 +306,12 @@ public class SplashActivity extends AppCompatActivity {
     }
 
     public void toaster(String message) {
+        // toasts
         Toast.makeText(SplashActivity.this, message, Toast.LENGTH_SHORT).show();
     }
 
-//    This function checks if a username already exists. If it exists, it returns true, else false.
     public boolean usernameExists(String username) {
-
+        // this function checks if a username already exists. If it exists, it returns true, else false
         DatabaseReference ref = FirebaseDatabase.getInstance().getReference();
         ref.child("users").child(username).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
@@ -307,9 +319,7 @@ public class SplashActivity extends AppCompatActivity {
                 if(dataSnapshot.exists()){
                     returnCode = true;
                 } else {
-                    // User does not exist. NOW call createUserWithEmailAndPassword
                     returnCode = false;
-
                 }
             }
 
